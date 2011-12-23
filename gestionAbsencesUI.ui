@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>233</height>
+    <width>700</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Gestion absences</string>
   </property>
   <property name="currentIndex">
-   <number>2</number>
+   <number>0</number>
   </property>
   <widget class="QWidget" name="__tAbsences">
    <attribute name="title">
@@ -37,13 +37,20 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>96</height>
+            <width>543</width>
+            <height>329</height>
            </rect>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QTableView" name="__twAbsences"/>
+            <widget class="QTableView" name="tvAbsences">
+             <attribute name="horizontalHeaderDefaultSectionSize">
+              <number>120</number>
+             </attribute>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -66,21 +73,21 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="__pbNouveau">
+           <widget class="QPushButton" name="nouveauAbsence">
             <property name="text">
              <string>Nouveau</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="__pbModifier">
+           <widget class="QPushButton" name="modifierAbsence">
             <property name="text">
              <string>Modifier</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="_pbSupprimer">
+           <widget class="QPushButton" name="supprimerAbsence">
             <property name="text">
              <string>Supprimer</string>
             </property>
@@ -115,13 +122,32 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>96</height>
+            <width>543</width>
+            <height>329</height>
            </rect>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QTableView" name="__tvIntervenants"/>
+            <widget class="QTableView" name="tvIntervenants">
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderDefaultSectionSize">
+              <number>180</number>
+             </attribute>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -144,7 +170,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="__pbNouveau_2">
+           <widget class="QPushButton" name="nouveauIntervenant">
             <property name="text">
              <string>Nouveau</string>
             </property>
@@ -158,7 +184,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="_pbSupprimer_2">
+           <widget class="QPushButton" name="supprimerIntervenant">
             <property name="text">
              <string>Supprimer</string>
             </property>
@@ -193,8 +219,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>238</width>
-            <height>162</height>
+            <width>543</width>
+            <height>329</height>
            </rect>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_7">
