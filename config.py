@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 
 class Config():
-	# TODO en faire un singleton ? protéger contre les accès multiples ?
+	_instance = None
+
 	def __init__(self, path):
+		assert self._instance == None
+		self._instance = self
+
 		self.__path = path
 		self.__config = {}
 		f = open(self.__path, "r")
@@ -12,6 +16,13 @@ class Config():
 			s = l.split("=")
 			self.__config[s[0].strip()] = s[1].strip()
 		f.close()
+
+	@staticmethod
+	def getInstance(path):
+		#Tester qu'on a pas déja ouvert une instance vace un autre chemin -> assert, ou fermeture réouverture ?
+		if Config._instance == None:
+			Config._instance = Config(path)
+		return Config._instance
 
 	def keys(self):
 		return self.__config.keys()
@@ -30,6 +41,7 @@ class Config():
 		f.close()
 
 if __name__ == "__main__":
+	"""Main de test"""
 	c = Config("private/config")
 	keys = c.keys()
 	for k in keys:

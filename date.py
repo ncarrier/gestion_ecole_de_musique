@@ -44,12 +44,6 @@ class DateDelegate(QSqlRelationalDelegate):
 			value = value.toString(Qt.SystemLocaleLongDate)
 			s = QString(value)
 			fm = QFontMetrics(QApplication.font())
-			# Ce qui suit ne marche pas
-			#(t, l, r, d) = QLineEdit("tutu").getTextMargins()
-			#print t
-			#print l
-			#print r
-			#print d
 
 			return QSize(fm.width(s) + 5, size.width())
 		else:

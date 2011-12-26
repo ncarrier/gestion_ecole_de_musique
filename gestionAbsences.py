@@ -6,7 +6,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtSql import *
 from gestionAbsencesUI import Ui_gestionAbsences
-from mail import MailSender
+from mail import MailComposer
 from date import DateDelegate
 
 class GestionAbsences(QTabWidget):
@@ -17,6 +17,7 @@ class GestionAbsences(QTabWidget):
 		monEcran.screenGeometry(screenIndex).width()
 		monEcran.screenGeometry(screenIndex).height()
 		self.createWidgets()
+		self.verifierAbsences()
 
 	def createWidgets(self):
 		self.ui = Ui_gestionAbsences()
@@ -69,6 +70,8 @@ class GestionAbsences(QTabWidget):
 		self.connect(self.ui.tvAbsences.selectionModel(),
 				SIGNAL("selectionChanged(QItemSelection, QItemSelection)"),
 				self.selectCurrentAbsence)
+
+		self.connect(self.ui.cbAbsence, SIGNAL("currentIndexChanged(int)"), self.updateMailComposer)
 
 	def supprimerAbsence(self):
 		index = self.ui.tvAbsences.currentIndex().row()
@@ -128,33 +131,83 @@ class GestionAbsences(QTabWidget):
 
 		event.accept()
 
+	def verifierAbsences(self):
+		# Vérification des mails à envoyer
+		req = QSqlQuery()
+		date = QDate.currentDate()
+		date = date.addMonths(-1)
+		date = date.toString(Qt.ISODate)
+
+		sql = "SELECT COUNT(*) FROM absence "
+		sql += "WHERE mail_envoye=0 AND regularisee=0 AND jour <= '" + date + "' "
+		if req.exec_(sql):
+			req.next()
+			nbMails = int(req.record().value(0).toString())
+		else:
+			print "SQL error"
+			return
+		label = str(nbMails) + " absence"
+		if nbMails == 0:
+			label += " :"
+			self.ui.lAbsence.setText(label)
+			self.ui.cbAbsence.setEnabled(False)
+			self.ui.pbEnvoyer.setEnabled(False)
+			self.ui.leSujet.setEnabled(False)
+			self.ui.teCorps.setEnabled(False)
+			return
+		if nbMails > 1:
+			label += "s"
+		label += " :"
+		self.ui.lAbsence.setText(label)
+
+		sql = "SELECT jour, nom, email FROM absence "
+		sql += "JOIN intervenant ON absence.id_intervenant=intervenant.id "
+		sql += "WHERE mail_envoye=0 AND regularisee=0 AND jour <= '" + date + "' "
+		if not req.exec_(sql):
+			print req.lastError().text()
+			print req.lastQuery()
+			print "Erreur de requête"
+		else:
+			self.__absences = []
+			while (req.next()):
+				absence = {}
+				rec = req.record()
+				absence = {}
+				absence["date"] = QDate.fromString(rec.value(0).toString(),
+						Qt.ISODate)
+				absence["nom"] = rec.value(1).toString()
+				absence["adresse"] = rec.value(2).toString()
+				self.__absences.append(absence)
+				item = absence["nom"] + " le "
+				item += absence["date"].toString(Qt.SystemLocaleLongDate)
+				self.ui.cbAbsence.addItem(item)
+
+	def updateMailComposer(self, index):
+		date = self.__absences[index]["date"].toString(Qt.SystemLocaleLongDate)
+		sujet = "Absence du " + date
+
+		self.ui.leSujet.setText(sujet)
+		self.ui.teCorps.setText(u"""Bonjour,
+Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous ne l'ayez ni rattrapé ni justifiée.
+
+Cordialement,
+Aurore jedrzejak""")
+
+
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
 
 	# Configuration de l'envoi des mails
-	ms = MailSender("private/config")
+	ms = MailComposer("private/config")
 
 	# Configuration de la base de données
 	db = QSqlDatabase.addDatabase("QSQLITE")
 	db.setDatabaseName('private/gestionAbsences.db')
 	db.open()
 
-	# Vérification des mails à envoyer
-	req = QSqlQuery()
-	if not req.exec_("SELECT COUNT(*) FROM absence WHERE mail_envoye=0"):
-		print req.lastError().text()
-		print req.lastQuery()
-		print "Erreur de requête"
-	else:
-		while (req.next()):
-			rec = req.record()
-			if rec.count() == 1:
-				pass
-				#print rec.value(0).toString()
-
 	# Création de l'ui principale et boucle principale
 	ui = GestionAbsences()
-	ui.setGeometry(QRect(100, 100, 900, 500))
+	ui.setGeometry(QRect(100, 20, 700, 400))
 	ui.show()
 	ret = app.exec_()
 
