@@ -8,6 +8,9 @@ from PyQt4.QtSql import *
 from gestionAbsencesUI import Ui_gestionAbsences
 from mail import MailSender
 from date import DateDelegate
+from config import Config
+from smtplib import SMTPAuthenticationError
+from socket import gaierror
 
 class GestionAbsences(QTabWidget):
 	def __init__(self, parent=None):
@@ -19,6 +22,7 @@ class GestionAbsences(QTabWidget):
 		self.createWidgets()
 		self.verifierAbsences()
 		self.__ms = MailSender()
+		self.__conf = Config.getInstance("private/config")
 
 	def createWidgets(self):
 		self.ui = Ui_gestionAbsences()
@@ -31,9 +35,12 @@ class GestionAbsences(QTabWidget):
 		self.modelIntervenant.setHeaderData(2, Qt.Horizontal,
 				u"Téléphone")
 		self.modelIntervenant.setHeaderData(3, Qt.Horizontal, "Email")
+		self.modelIntervenant.setEditStrategy(QSqlTableModel.OnFieldChange)
 		self.modelIntervenant.select()
 
 		self.ui.tvIntervenants.setModel(self.modelIntervenant)
+		self.ui.tvIntervenants.setSelectionBehavior(QAbstractItemView.SelectRows)
+		self.ui.tvIntervenants.setSelectionMode(QAbstractItemView.SingleSelection)
 		self.ui.tvIntervenants.setColumnHidden(0, True)
 		self.ui.tvIntervenants.sortByColumn(1, Qt.AscendingOrder)
 		self.ui.tvIntervenants.resizeColumnsToContents()
@@ -42,9 +49,6 @@ class GestionAbsences(QTabWidget):
 				self.nouveauIntervenant)
 		self.connect(self.ui.supprimerIntervenant, SIGNAL("clicked()"),
 				self.supprimerIntervenant)
-		self.connect(self.ui.tvIntervenants.selectionModel(),
-				SIGNAL("selectionChanged(QItemSelection, QItemSelection)"),
-				self.selectCurrentIntervenant)
 
 		self.modelAbsence = QSqlRelationalTableModel(self)
 		self.modelAbsence.setTable("absence")
@@ -59,18 +63,18 @@ class GestionAbsences(QTabWidget):
 		self.modelAbsence.setHeaderData(2, Qt.Horizontal, "Intervenant")
 		self.modelAbsence.setHeaderData(3, Qt.Horizontal, u"Régularisée")
 		self.modelAbsence.setHeaderData(4, Qt.Horizontal, u"Email envoyé")
+		self.modelAbsence.setEditStrategy(QSqlTableModel.OnFieldChange)
 		self.modelAbsence.select()
 
 		self.ui.tvAbsences.setModel(self.modelAbsence)
+		self.ui.tvAbsences.setSelectionBehavior(QAbstractItemView.SelectRows)
+		self.ui.tvAbsences.setSelectionMode(QAbstractItemView.SingleSelection)
 		self.ui.tvAbsences.setColumnHidden(0, True)
 		self.ui.tvAbsences.setItemDelegate(DateDelegate(self, 1))
 		self.ui.tvAbsences.resizeColumnsToContents()
 
 		self.connect(self.ui.nouveauAbsence, SIGNAL("clicked()"), self.nouveauAbsence)
 		self.connect(self.ui.supprimerAbsence, SIGNAL("clicked()"), self.supprimerAbsence)
-		self.connect(self.ui.tvAbsences.selectionModel(),
-				SIGNAL("selectionChanged(QItemSelection, QItemSelection)"),
-				self.selectCurrentAbsence)
 
 		self.connect(self.ui.cbAbsence, SIGNAL("currentIndexChanged(int)"), self.updateMailComposer)
 		self.connect(self.modelIntervenant,
@@ -85,36 +89,43 @@ class GestionAbsences(QTabWidget):
 				self.refresh)
 
 	def supprimerAbsence(self):
-		index = self.ui.tvAbsences.currentIndex().row()
+		index = self.ui.tvAbsences.currentIndex()
+		row = index.row()
 		if -1 == index:
 			QMessageBox.information(self,
-					u"Cliquer sur la ligne à supprimer",
+					u"Cliquer sur l'absence à supprimer",
 					u"Veuiller cliquer sur l'une des cases" +
 					u"de l'absence à supprimer avant " +
 					u"de cliquer sur le bouton supprimer")
 		else:
 			supprimer = QMessageBox.question(self, "Confirmer la suppression",
-					u"Êtes-vous sûr de vouloir supprimer " +
-					"l'absence " + str(index),
+					u"Supprimer l'absence de " +
+					index.sibling(row, 2).data().toString() +
+					" du " +
+					index.sibling(row, 1).data().toDate().toString(Qt.SystemLocaleLongDate) +
+					" ?",
 					QMessageBox.Yes | QMessageBox.No);
 			if supprimer == QMessageBox.Yes:
-				self.modelAbsence.removeRows(index, 1)
+				self.modelAbsence.removeRows(row, 1)
 
 	def supprimerIntervenant(self):
-		index = self.ui.tvIntervenants.currentIndex().row()
+		index = self.ui.tvIntervenants.currentIndex()
+		row = index.row()
 		if -1 == index:
 			QMessageBox.information(self,
-					u"Cliquer sur la ligne à supprimer",
+					u"Cliquer sur l'intervenant à supprimer",
 					u"Veuiller cliquer sur l'une des cases" +
 					u"de l'intervenant à supprimer avant " +
 					u"de cliquer sur le bouton supprimer")
 		else:
 			supprimer = QMessageBox.question(self, "Confirmer la suppression",
-					u"Êtes-vous sûr de vouloir supprimer l'interv" +
-					"enant " + str(index), QMessageBox.Yes |
-					QMessageBox.No);
+					u"Êtes-vous sûr de vouloir supprimer " +
+					u"l'intervenant " +
+					index.sibling(row, 1).data().toString()
+					+ " ? ",
+					QMessageBox.Yes | QMessageBox.No);
 			if supprimer == QMessageBox.Yes:
-				self.modelIntervenant.removeRows(index, 1)
+				self.modelIntervenant.removeRows(row, 1)
 
 	def nouveauAbsence(self):
 		self.modelAbsence.insertRows(0, 1)
@@ -122,27 +133,9 @@ class GestionAbsences(QTabWidget):
 	def nouveauIntervenant(self):
 		self.modelIntervenant.insertRows(0, 1)
 
-	def selectCurrentIntervenant(self, selected, deselected):
-		"""Sélectionne la ligne correspondant à l'intervenant sur
-		lequel on vient de cliquer"""
-		row = self.ui.tvIntervenants.currentIndex().row()
-		if row != -1:
-			self.ui.tvIntervenants.selectRow(row)
-
-	def selectCurrentAbsence(self, selected, deselected):
-		"""Sélectionne la ligne correspondant à l'absence sur
-		laquelle on vient de cliquer"""
-		row = self.ui.tvAbsences.currentIndex().row()
-		if row != -1:
-			self.ui.tvAbsences.selectRow(row)
-
-	def closeEvent(self, event):
-		self.modelIntervenant.submitAll()
-		self.modelAbsence.submitAll()
-
-		event.accept()
-
 	def verifierAbsences(self):
+		self.ui.cbAbsence.clear()
+
 		# Vérification des mails à envoyer
 		req = QSqlQuery()
 		date = QDate.currentDate()
@@ -161,7 +154,6 @@ class GestionAbsences(QTabWidget):
 		if nbMails == 0:
 			label += " :"
 			self.ui.lAbsence.setText(label)
-			self.ui.cbAbsence.clear()
 			self.ui.leSujet.setText("")
 			self.ui.teCorps.setText("")
 			self.ui.cbAbsence.setEnabled(False)
@@ -209,7 +201,7 @@ class GestionAbsences(QTabWidget):
 
 		self.ui.leSujet.setText(sujet)
 		self.ui.teCorps.setText(u"""Bonjour,
-Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous ne l'ayez ni rattrapée ni justifiée.
+Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous n'ayez ni rattrapé ni justifié cette absence.
 
 Cordialement,
 Aurore JEDRZEJAK""")
@@ -228,27 +220,47 @@ Aurore JEDRZEJAK""")
 		sujet = str(self.ui.leSujet.text())
 		corps = self.ui.teCorps.toPlainText().__str__()
 		result = QInputDialog.getText(self, "Mot de passe",
-				"Veuillez saisir le mot de passe de votre "+
-				"compte de messagerie", QLineEdit.Password)
+				"Veuillez saisir le mot de passe<br /> " +
+				"de votre compte de messagerie",
+				QLineEdit.Password)
 		password = str(result[0])
 		if result[1]:
-			self.__ms.envoiMail(dest, sujet, corps, password)
-
-		# Mise à jour de la base
-		sql = "UPDATE absence "
-		sql += "SET mail_envoye=1 "
-		sql += "WHERE id=" + str(self.__absences[index]["id"])
-		req = QSqlQuery()
-		if not req.exec_(sql):
-			print "SQL error"
-			print req.lastError().text()
-			print req.lastQuery()
-		else:
-			self.refresh()
-
+			try:
+				self.__ms.envoiMail(dest, sujet, corps,
+						password)
+				# Mise à jour de la base
+				sql = "UPDATE absence "
+				sql += "SET mail_envoye=1 "
+				sql += "WHERE id=" + str(self.__absences[index]["id"])
+				req = QSqlQuery()
+				if not req.exec_(sql):
+					print "SQL error"
+					print req.lastError().text()
+					print req.lastQuery()
+				else:
+					self.refresh()
+			except SMTPAuthenticationError:
+				QMessageBox.critical(self,
+						"Erreur d'authentification",
+						"Login et mot de passe " +
+						"incorrects.<br />(login "
+						+ self.__conf["email"] + ")")
+			except gaierror:
+				QMessageBox.critical(self,
+						"Erreur de connection",
+						"Impossible de contacter le " +
+						"serveur.<br/>Veuillez " +
+						u"vérifier la connexion à " +
+						"internet.")
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
+
+	locale = QLocale.system().name()
+	translator = QTranslator()
+	translator.load(QString("qt_") + locale,
+			QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+	app.installTranslator(translator)
 
 	# Configuration de la base de données
 	db = QSqlDatabase.addDatabase("QSQLITE")
