@@ -6,7 +6,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtSql import *
 from gestionAbsencesUI import Ui_gestionAbsences
-from mail import MailComposer
+from mail import MailSender
 from date import DateDelegate
 
 class GestionAbsences(QTabWidget):
@@ -18,6 +18,7 @@ class GestionAbsences(QTabWidget):
 		monEcran.screenGeometry(screenIndex).height()
 		self.createWidgets()
 		self.verifierAbsences()
+		self.__ms = MailSender()
 
 	def createWidgets(self):
 		self.ui = Ui_gestionAbsences()
@@ -72,6 +73,16 @@ class GestionAbsences(QTabWidget):
 				self.selectCurrentAbsence)
 
 		self.connect(self.ui.cbAbsence, SIGNAL("currentIndexChanged(int)"), self.updateMailComposer)
+		self.connect(self.modelIntervenant,
+				SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
+				self.refresh)
+		self.connect(self.modelAbsence,
+				SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
+				self.refresh)
+		self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"),
+				self.envoyerMail)
+		self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"),
+				self.refresh)
 
 	def supprimerAbsence(self):
 		index = self.ui.tvAbsences.currentIndex().row()
@@ -150,17 +161,26 @@ class GestionAbsences(QTabWidget):
 		if nbMails == 0:
 			label += " :"
 			self.ui.lAbsence.setText(label)
+			self.ui.cbAbsence.clear()
+			self.ui.leSujet.setText("")
+			self.ui.teCorps.setText("")
 			self.ui.cbAbsence.setEnabled(False)
 			self.ui.pbEnvoyer.setEnabled(False)
 			self.ui.leSujet.setEnabled(False)
 			self.ui.teCorps.setEnabled(False)
 			return
+		else:
+			self.ui.cbAbsence.setEnabled(True)
+			self.ui.pbEnvoyer.setEnabled(True)
+			self.ui.leSujet.setEnabled(True)
+			self.ui.teCorps.setEnabled(True)
+
 		if nbMails > 1:
 			label += "s"
 		label += " :"
 		self.ui.lAbsence.setText(label)
 
-		sql = "SELECT jour, nom, email FROM absence "
+		sql = "SELECT absence.id, jour, nom, email FROM absence "
 		sql += "JOIN intervenant ON absence.id_intervenant=intervenant.id "
 		sql += "WHERE mail_envoye=0 AND regularisee=0 AND jour <= '" + date + "' "
 		if not req.exec_(sql):
@@ -173,10 +193,11 @@ class GestionAbsences(QTabWidget):
 				absence = {}
 				rec = req.record()
 				absence = {}
-				absence["date"] = QDate.fromString(rec.value(0).toString(),
+				absence["id"] = int(rec.value(0).toString())
+				absence["date"] = QDate.fromString(rec.value(1).toString(),
 						Qt.ISODate)
-				absence["nom"] = rec.value(1).toString()
-				absence["adresse"] = rec.value(2).toString()
+				absence["nom"] = rec.value(2).toString()
+				absence["adresse"] = rec.value(3).toString()
 				self.__absences.append(absence)
 				item = absence["nom"] + " le "
 				item += absence["date"].toString(Qt.SystemLocaleLongDate)
@@ -188,17 +209,46 @@ class GestionAbsences(QTabWidget):
 
 		self.ui.leSujet.setText(sujet)
 		self.ui.teCorps.setText(u"""Bonjour,
-Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous ne l'ayez ni rattrapé ni justifiée.
+Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous ne l'ayez ni rattrapée ni justifiée.
 
 Cordialement,
-Aurore jedrzejak""")
+Aurore JEDRZEJAK""")
+
+	def refresh(self, tl = None, br = None):
+		self.modelIntervenant.submitAll()
+		self.modelAbsence.submitAll()
+
+		self.modelIntervenant.select()
+		self.modelAbsence.select()
+		self.verifierAbsences()
+
+	def envoyerMail(self):
+		index = self.ui.cbAbsence.currentIndex()
+		dest = str(self.__absences[index]["adresse"])
+		sujet = str(self.ui.leSujet.text())
+		corps = self.ui.teCorps.toPlainText().__str__()
+		result = QInputDialog.getText(self, "Mot de passe",
+				"Veuillez saisir le mot de passe de votre "+
+				"compte de messagerie", QLineEdit.Password)
+		password = str(result[0])
+		if result[1]:
+			self.__ms.envoiMail(dest, sujet, corps, password)
+
+		# Mise à jour de la base
+		sql = "UPDATE absence "
+		sql += "SET mail_envoye=1 "
+		sql += "WHERE id=" + str(self.__absences[index]["id"])
+		req = QSqlQuery()
+		if not req.exec_(sql):
+			print "SQL error"
+			print req.lastError().text()
+			print req.lastQuery()
+		else:
+			self.refresh()
 
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
-
-	# Configuration de l'envoi des mails
-	ms = MailComposer("private/config")
 
 	# Configuration de la base de données
 	db = QSqlDatabase.addDatabase("QSQLITE")
