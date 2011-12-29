@@ -124,10 +124,15 @@ class GestionAbsences(QTabWidget):
 				self.modelIntervenant.removeRows(row, 1)
 
 	def nouveauAbsence(self):
-		self.modelAbsence.insertRows(0, 1)
+		self.modelAbsence.insertRow(0)
+		index = self.modelAbsence.index(0, 3)
+		self.modelAbsence.setData(index, "0")
+		index = self.modelAbsence.index(0, 4)
+		self.modelAbsence.setData(index, "0")
+
 
 	def nouveauIntervenant(self):
-		self.modelIntervenant.insertRows(0, 1)
+		self.modelIntervenant.insertRow(0)
 
 	def verifierAbsences(self):
 		self.ui.cbAbsence.clear()
