@@ -27,8 +27,4 @@ BEGIN TRANSACTION;
 		FOREIGN KEY (id_intervenant) REFERENCES intervenant(id),
 		FOREIGN KEY (id_cours) REFERENCES cours(id)
 	);
-	CREATE TABLE booleen(
-		id INTEGER PRIMARY KEY,
-		libelle VARCHAR(4) UNIQUE NOT NULL
-	);
 COMMIT;
