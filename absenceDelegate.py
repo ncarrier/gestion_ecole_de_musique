@@ -2,24 +2,39 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtSql import *
 
-class DateDelegate(QSqlRelationalDelegate):
-	def __init__(self, parent, dateColumn):
-		super(DateDelegate, self).__init__(parent)
+class AbsenceDelegate(QSqlRelationalDelegate):
+	def __init__(self, parent, dateColumn, mailEnvoyeColumn, regulariseeColumn):
+		super(AbsenceDelegate, self).__init__(parent)
 		self.__dateColumn = dateColumn
+		self.__mailEnvoyeColumn = mailEnvoyeColumn
+		self.__regulariseeColumn = regulariseeColumn
 
 	def createEditor(self, parent, option, index):
-		if index.isValid() and index.column() == self.__dateColumn:
-			return QDateEdit(QDate.currentDate(), parent)
-		else:
+		if not index.isValid():
 			return QSqlRelationalDelegate.createEditor(self, parent,
 					option, index)
-	
+
+		if index.column() == self.__dateColumn:
+			return QDateEdit(QDate.currentDate(), parent)
+		elif index.column() == self.__mailEnvoyeColumn or index.column() == self.__regulariseeColumn:
+			return QCheckBox("", parent)
+
+		return QSqlRelationalDelegate.createEditor(self, parent,
+				option, index)
+
+
 	def setEditorData(self, editor, index):
-		value = index.model().data(index, Qt.EditRole).toDate()
 
 		if index.isValid() and index.column() == self.__dateColumn:
+			value = index.model().data(index, Qt.EditRole).toDate()
 			editor.setCalendarPopup(True)
 			editor.setDate(value)
+		elif index.isValid() and index.column() == self.__mailEnvoyeColumn:
+			value = index.model().data(index, Qt.EditRole).toBool()
+			editor.setChecked(value)
+		elif index.isValid() and index.column() == self.__regulariseeColumn:
+			value = index.model().data(index, Qt.EditRole).toBool()
+			editor.setChecked(value)
 		else:
 			QSqlRelationalDelegate.setEditorData(self, editor, index)
 
@@ -40,7 +55,7 @@ class DateDelegate(QSqlRelationalDelegate):
 	def sizeHint(self, option, index):
 		size = QSqlRelationalDelegate.sizeHint(self, option, index)
 		if index.isValid() and index.column() == self.__dateColumn:
-			value = index.model().data(index, Qt.EditRole).toDate()
+			value = index.model().data(index, Qt.DisplayRole).toDate()
 			value = value.toString(Qt.SystemLocaleLongDate)
 			s = QString(value)
 			fm = QFontMetrics(QApplication.font())
@@ -52,7 +67,7 @@ class DateDelegate(QSqlRelationalDelegate):
 	def paint(self, painter, option, index):
 		painter.save()
 		if index.isValid() and index.column() == self.__dateColumn:
-			value = index.model().data(index, Qt.EditRole).toDate()
+			value = index.model().data(index, Qt.DisplayRole).toDate()
 			value = value.toString(Qt.SystemLocaleLongDate)
 			align = Qt.AlignHCenter | Qt.AlignVCenter
 			if option.state and QStyle.State_Active:
@@ -66,10 +81,14 @@ class DateDelegate(QSqlRelationalDelegate):
 			QApplication.style().drawItemText(painter, option.rect,
 					align, option.palette, True, value,
 					palette)
-
-
+#		elif index.isValid() and index.column() == self.__mailEnvoyeColumn:
+#			painter = QStylePainter()
+#			painter.drawControl(QStyle.CE_CheckBox, option)
+#		elif index.isValid() and index.column() == self.__regulariseeColumn:
+#			QApplication.style().drawControl(QStyle.CE_CheckBox,
+#					option, painter)
 		else:
 			QSqlRelationalDelegate.paint(self, painter, option,
 					index)
-	
+
 		painter.restore()

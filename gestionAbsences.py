@@ -7,7 +7,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtSql import *
 from gestionAbsencesUI import Ui_gestionAbsences
 from mail import MailSender
-from date import DateDelegate
+from absenceDelegate import AbsenceDelegate
 from config import Config
 from smtplib import SMTPAuthenticationError
 from socket import gaierror
@@ -52,10 +52,6 @@ class GestionAbsences(QTabWidget):
 		self.modelAbsence.setTable("absence")
 		self.modelAbsence.setRelation(2, QSqlRelation("intervenant",
 			"id", "nom"))
-		self.modelAbsence.setRelation(3, QSqlRelation("booleen", "id",
-			"libelle"))
-		self.modelAbsence.setRelation(4, QSqlRelation("booleen", "id",
-			"libelle"))
 
 		self.modelAbsence.setHeaderData(1, Qt.Horizontal, "Jour")
 		self.modelAbsence.setHeaderData(2, Qt.Horizontal, "Intervenant")
@@ -66,7 +62,7 @@ class GestionAbsences(QTabWidget):
 
 		self.ui.tvAbsences.setModel(self.modelAbsence)
 		self.ui.tvAbsences.setColumnHidden(0, True)
-		self.ui.tvAbsences.setItemDelegate(DateDelegate(self, 1))
+		self.ui.tvAbsences.setItemDelegate(AbsenceDelegate(self, 1, 3, 4))
 		self.ui.tvAbsences.sortByColumn(1, Qt.AscendingOrder)
 		self.ui.tvAbsences.resizeColumnsToContents()
 
@@ -145,7 +141,7 @@ class GestionAbsences(QTabWidget):
 		date = date.toString(Qt.ISODate)
 
 		sql = "SELECT COUNT(*) FROM absence "
-		sql += "WHERE mail_envoye=0 AND regularisee=0 AND jour <= '" + date + "' "
+		sql += "WHERE mail_envoye='false' AND regularisee='false' AND jour <= '" + date + "' "
 		if req.exec_(sql):
 			req.next()
 			nbMails = int(req.record().value(0).toString())
@@ -176,7 +172,7 @@ class GestionAbsences(QTabWidget):
 
 		sql = "SELECT absence.id, jour, nom, email FROM absence "
 		sql += "JOIN intervenant ON absence.id_intervenant=intervenant.id "
-		sql += "WHERE mail_envoye=0 AND regularisee=0 AND jour <= '" + date + "' "
+		sql += "WHERE mail_envoye='false' AND regularisee='false' AND jour <= '" + date + "' "
 		if not req.exec_(sql):
 			print req.lastError().text()
 			print req.lastQuery()
