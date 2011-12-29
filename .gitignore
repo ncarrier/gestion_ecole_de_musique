@@ -8,3 +8,6 @@ private
 windows
 old
 gestionAbsencesUI.py
+.project
+.pydevproject
+.settings/
