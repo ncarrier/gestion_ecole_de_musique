@@ -14,7 +14,7 @@
    <string>Gestion absences</string>
   </property>
   <property name="currentIndex">
-   <number>1</number>
+   <number>2</number>
   </property>
   <widget class="QWidget" name="wGestionAbsences">
    <attribute name="title">
@@ -255,9 +255,6 @@
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
               <bool>true</bool>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
              </attribute>
             </widget>
            </item>

@@ -67,6 +67,7 @@ class GestionAbsences(QTabWidget):
 		self.ui.tvAbsences.setModel(self.modelAbsence)
 		self.ui.tvAbsences.setColumnHidden(0, True)
 		self.ui.tvAbsences.setItemDelegate(DateDelegate(self, 1))
+		self.ui.tvAbsences.sortByColumn(1, Qt.AscendingOrder)
 		self.ui.tvAbsences.resizeColumnsToContents()
 
 		self.connect(self.ui.nouveauAbsence, SIGNAL("clicked()"), self.nouveauAbsence)
@@ -132,7 +133,7 @@ class GestionAbsences(QTabWidget):
 
 
 	def nouveauIntervenant(self):
-		self.modelIntervenant.insertRow(0)
+		self.modelIntervenant.insertRows(0)
 
 	def verifierAbsences(self):
 		self.ui.cbAbsence.clear()
