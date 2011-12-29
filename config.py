@@ -3,25 +3,25 @@
 
 class Config():
 	_instance = None
+	_path = "private/config"
 
-	def __init__(self, path):
+	def __init__(self):
 		assert self._instance == None
-		self._instance = self
+		Config._instance = self
 
-		self.__path = path
 		self.__config = {}
-		f = open(self.__path, "r")
+		f = open(Config._path, "r")
 		lines = f.readlines()
 		for l in lines:
-			s = l.split("=")
+			s = l.split("#")[0].split("=")
 			self.__config[s[0].strip()] = s[1].strip()
 		f.close()
 
 	@staticmethod
-	def getInstance(path):
-		#Tester qu'on a pas déja ouvert une instance vace un autre chemin -> assert, ou fermeture réouverture ?
+	def getInstance():
 		if Config._instance == None:
-			Config._instance = Config(path)
+			Config._instance = Config()
+
 		return Config._instance
 
 	def keys(self):
@@ -42,7 +42,7 @@ class Config():
 
 if __name__ == "__main__":
 	"""Main de test"""
-	c = Config("private/config")
+	c = Config.getInstance()
 	keys = c.keys()
 	for k in keys:
 		print k + " = " + c[k]

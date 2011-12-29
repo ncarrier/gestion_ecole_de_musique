@@ -14,7 +14,7 @@
    <string>Gestion absences</string>
   </property>
   <property name="currentIndex">
-   <number>0</number>
+   <number>1</number>
   </property>
   <widget class="QWidget" name="wGestionAbsences">
    <attribute name="title">
@@ -142,6 +142,18 @@
            </property>
            <item>
             <widget class="QTableView" name="tvAbsences">
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
              <attribute name="horizontalHeaderDefaultSectionSize">
               <number>120</number>
              </attribute>
@@ -226,6 +238,15 @@
            </property>
            <item>
             <widget class="QTableView" name="tvIntervenants">
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>

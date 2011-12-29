@@ -22,7 +22,7 @@ class GestionAbsences(QTabWidget):
 		self.createWidgets()
 		self.verifierAbsences()
 		self.__ms = MailSender()
-		self.__conf = Config.getInstance("private/config")
+		self.__conf = Config.getInstance()
 
 	def createWidgets(self):
 		self.ui = Ui_gestionAbsences()
@@ -39,8 +39,6 @@ class GestionAbsences(QTabWidget):
 		self.modelIntervenant.select()
 
 		self.ui.tvIntervenants.setModel(self.modelIntervenant)
-		self.ui.tvIntervenants.setSelectionBehavior(QAbstractItemView.SelectRows)
-		self.ui.tvIntervenants.setSelectionMode(QAbstractItemView.SingleSelection)
 		self.ui.tvIntervenants.setColumnHidden(0, True)
 		self.ui.tvIntervenants.sortByColumn(1, Qt.AscendingOrder)
 		self.ui.tvIntervenants.resizeColumnsToContents()
@@ -67,8 +65,6 @@ class GestionAbsences(QTabWidget):
 		self.modelAbsence.select()
 
 		self.ui.tvAbsences.setModel(self.modelAbsence)
-		self.ui.tvAbsences.setSelectionBehavior(QAbstractItemView.SelectRows)
-		self.ui.tvAbsences.setSelectionMode(QAbstractItemView.SingleSelection)
 		self.ui.tvAbsences.setColumnHidden(0, True)
 		self.ui.tvAbsences.setItemDelegate(DateDelegate(self, 1))
 		self.ui.tvAbsences.resizeColumnsToContents()

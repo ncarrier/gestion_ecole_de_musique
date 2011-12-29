@@ -1,3 +1,4 @@
 Suppression en cascade des absences quand on supprime un intervenant
-bug absence janvier 2011
-bug affichage nouvele absence en cours de saisie
+bug affichage nouvelle absence en cours de saisie
+onglet options:
+	spin box pour durée et combo box pour unité jour/semaine/mois

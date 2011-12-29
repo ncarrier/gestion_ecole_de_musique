@@ -5,7 +5,7 @@ from config import Config
 
 class MailSender():
 	def __init__(self):
-		self.__conf = Config.getInstance("private/config")
+		self.__conf = Config.getInstance()
 
 	def envoiMail(self, dest, sujet, corps, password):
 		"""Envoit un mail selon les paramètres du fichier de
