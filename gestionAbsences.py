@@ -2,9 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtSql import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import QDate
+from PyQt4.QtCore import QLocale
+from PyQt4.QtCore import QTranslator
+from PyQt4.QtCore import QString
+from PyQt4.QtCore import QLibraryInfo
+from PyQt4.QtCore import QRect
+
+from PyQt4.QtGui import QApplication
+from PyQt4.QtGui import QTabWidget
+from PyQt4.QtGui import QDesktopWidget
+from PyQt4.QtGui import QMessageBox
+from PyQt4.QtGui import QInputDialog
+from PyQt4.QtGui import QLineEdit
+
+from PyQt4.QtSql import QSqlTableModel
+from PyQt4.QtSql import QSqlRelation
+from PyQt4.QtSql import QSqlRelationalTableModel
+from PyQt4.QtSql import QSqlQuery
+from PyQt4.QtSql import QSqlDatabase
+
 from gestionAbsencesUI import Ui_gestionAbsences
 from mail import MailSender
 from absenceDelegate import AbsenceDelegate
@@ -32,8 +51,7 @@ class GestionAbsences(QTabWidget):
 		self.modelIntervenant.setTable("intervenant")
 
 		self.modelIntervenant.setHeaderData(1, Qt.Horizontal, "Nom")
-		self.modelIntervenant.setHeaderData(2, Qt.Horizontal,
-				u"Téléphone")
+		self.modelIntervenant.setHeaderData(2, Qt.Horizontal, u"Téléphone")
 		self.modelIntervenant.setHeaderData(3, Qt.Horizontal, "Email")
 		self.modelIntervenant.setEditStrategy(QSqlTableModel.OnFieldChange)
 		self.modelIntervenant.select()
@@ -76,8 +94,7 @@ class GestionAbsences(QTabWidget):
 		self.connect(self.modelAbsence,
 				SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
 				self.refresh)
-		self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"),
-				self.envoyerMail)
+		self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"), self.envoyerMail)
 		self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"),
 				self.refresh)
 
