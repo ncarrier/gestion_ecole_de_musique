@@ -6,28 +6,27 @@ from PyQt4.QtCore import Qt, SIGNAL, QDate, QLocale, QTranslator, QString
 from PyQt4.QtCore import QLibraryInfo, QRect
 
 from PyQt4.QtGui import QApplication, QTabWidget, QDesktopWidget, QMessageBox
-from PyQt4.QtGui import QInputDialog, QLineEdit
+from PyQt4.QtGui import QInputDialog, QLineEdit, QAbstractItemView
 
 from PyQt4.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalTableModel
 from PyQt4.QtSql import QSqlQuery, QSqlDatabase
 
 from gestionAbsencesUI import Ui_gestionAbsences
 from mail import MailSender
-from absenceDelegate import AbsenceDelegate
+from absencedelegate import AbsenceDelegate
 from config import Config
-from smtplib import SMTPAuthenticationError
-from socket import gaierror
+
 
 class GestionAbsences(QTabWidget):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(GestionAbsences, self).__init__(parent)
         screenIndex = 0
         monEcran = QDesktopWidget()
         monEcran.screenGeometry(screenIndex).width()
         monEcran.screenGeometry(screenIndex).height()
+        self.ms = MailSender()
         self.createWidgets()
         self.verifierAbsences()
-        self.__ms = MailSender()
         self.__conf = Config.getInstance()
 
     def createWidgets(self):
@@ -67,23 +66,60 @@ class GestionAbsences(QTabWidget):
 
         self.ui.tvAbsences.setModel(self.modelAbsence)
         self.ui.tvAbsences.setColumnHidden(0, True)
-        self.ui.tvAbsences.setItemDelegate(AbsenceDelegate(self, 1, 3, 4))
+        self.ui.tvAbsences.setItemDelegate(AbsenceDelegate(self, [1], [3, 4]))
         self.ui.tvAbsences.sortByColumn(1, Qt.AscendingOrder)
         self.ui.tvAbsences.resizeColumnsToContents()
+        self.ui.tvAbsences.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
-        self.connect(self.ui.nouveauAbsence, SIGNAL("clicked()"), self.nouveauAbsence)
-        self.connect(self.ui.supprimerAbsence, SIGNAL("clicked()"), self.supprimerAbsence)
-
-        self.connect(self.ui.cbAbsence, SIGNAL("currentIndexChanged(int)"), self.updateMailComposer)
+        self.connect(self.ui.nouveauAbsence, SIGNAL("clicked()"),
+            self.nouveauAbsence)
+        self.connect(self.ui.supprimerAbsence, SIGNAL("clicked()"),
+            self.supprimerAbsence)
+        self.connect(self.ui.cbAbsence, SIGNAL("currentIndexChanged(int)"),
+            self.updateMailComposer)
         self.connect(self.modelIntervenant,
-                SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
-                self.refresh)
+            SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
+            self.refresh)
         self.connect(self.modelAbsence,
-                SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
-                self.refresh)
+            SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
+            self.refresh)
         self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"), self.envoyerMail)
-        self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"),
-                self.refresh)
+        self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"), self.refresh)
+
+        self.connect(self.ms, SIGNAL("sentSignal(int)"), self.mailResult)
+
+    def mailResult(self, errCode):
+        self.activerMailComposer(True)
+        if errCode == MailSender.MAIL_ERROR_NONE:
+            # Mail envoyé, mise à jour de la base
+            index = self.ui.cbAbsence.currentIndex()
+
+            sql = "UPDATE absence "
+            sql += "SET mail_envoye=1 "
+            sql += "WHERE id=" + str(self.__absences[index]["id"])
+            req = QSqlQuery()
+            if not req.exec_(sql):
+                # TODO afficher une boîte de dialogue
+                print "SQL error"
+                print req.lastError().text()
+                print req.lastQuery()
+            else:
+                self.refresh()
+
+        elif (errCode == MailSender.MAIL_ERROR_TIMEOUT or
+            errCode == MailSender.MAIL_ERROR_CONNECTION):
+            QMessageBox.critical(self, "Erreur de connection",
+                "Impossible de contacter le serveur.<br/>" +
+                "Veuillez vérifier la connexion à internet.")
+        elif errCode == MailSender.MAIL_ERROR_AUTHENTICATION:
+            QMessageBox.critical(self, "Erreur d'authentification",
+                "Login et mot de passe incorrects.<br />(login "
+                + self.__conf["email"] + ")")
+        else:  # MailSender.MAIL_ERROR_OTHER:
+            QMessageBox.critical(self, "Erreur inconnue",
+                "Une erreur inconnue s'est produite.<br />(login '"
+                + self.__conf["email"] + "')")
+            # TODO logger l'erreur réelle à la levée de l'exception
 
     def supprimerAbsence(self):
         index = self.ui.tvAbsences.currentIndex()
@@ -95,13 +131,12 @@ class GestionAbsences(QTabWidget):
                     u"de l'absence à supprimer avant " +
                     u"de cliquer sur le bouton supprimer")
         else:
+            date = index.sibling(row, 1).data().toDate()
             supprimer = QMessageBox.question(self, "Confirmer la suppression",
-                    u"Supprimer l'absence de " +
-                    index.sibling(row, 2).data().toString() +
-                    " du " +
-                    index.sibling(row, 1).data().toDate().toString(Qt.SystemLocaleLongDate) +
-                    " ?",
-                    QMessageBox.Yes | QMessageBox.No);
+                u"Supprimer l'absence de " +
+                index.sibling(row, 2).data().toString() + " du " +
+                date.toString(Qt.SystemLocaleLongDate) +
+                " ?", QMessageBox.Yes | QMessageBox.No)
             if supprimer == QMessageBox.Yes:
                 self.modelAbsence.removeRows(row, 1)
 
@@ -120,7 +155,7 @@ class GestionAbsences(QTabWidget):
                     u"l'intervenant " +
                     index.sibling(row, 1).data().toString()
                     + " ? ",
-                    QMessageBox.Yes | QMessageBox.No);
+                    QMessageBox.Yes | QMessageBox.No)
             if supprimer == QMessageBox.Yes:
                 self.modelIntervenant.removeRows(row, 1)
 
@@ -131,9 +166,14 @@ class GestionAbsences(QTabWidget):
         index = self.modelAbsence.index(0, 4)
         self.modelAbsence.setData(index, "0")
 
-
     def nouveauIntervenant(self):
         self.modelIntervenant.insertRows(0)
+
+    def activerMailComposer(self, actif):
+        self.ui.cbAbsence.setEnabled(actif)
+        self.ui.pbEnvoyer.setEnabled(actif)
+        self.ui.leSujet.setEnabled(actif)
+        self.ui.teCorps.setEnabled(actif)
 
     def verifierAbsences(self):
         self.ui.cbAbsence.clear()
@@ -145,11 +185,14 @@ class GestionAbsences(QTabWidget):
         date = date.toString(Qt.ISODate)
 
         sql = "SELECT COUNT(*) FROM absence "
-        sql += "WHERE mail_envoye='false' AND regularisee='false' AND jour <= '" + date + "' "
+        sql += "WHERE mail_envoye='false' "
+        sql += "AND regularisee='false' "
+        sql += "AND jour <= '" + date + "' "
         if req.exec_(sql):
             req.next()
             nbMails = int(req.record().value(0).toString())
         else:
+            # TODO log
             print "SQL error"
             return
         label = str(nbMails) + " absence"
@@ -158,25 +201,23 @@ class GestionAbsences(QTabWidget):
             self.ui.lAbsence.setText(label)
             self.ui.leSujet.setText("")
             self.ui.teCorps.setText("")
-            self.ui.cbAbsence.setEnabled(False)
-            self.ui.pbEnvoyer.setEnabled(False)
-            self.ui.leSujet.setEnabled(False)
-            self.ui.teCorps.setEnabled(False)
+            self.activerMailComposer(False)
             return
         else:
-            self.ui.cbAbsence.setEnabled(True)
-            self.ui.pbEnvoyer.setEnabled(True)
-            self.ui.leSujet.setEnabled(True)
-            self.ui.teCorps.setEnabled(True)
+            self.activerMailComposer(True)
 
         if nbMails > 1:
             label += "s"
         label += " :"
         self.ui.lAbsence.setText(label)
 
-        sql = "SELECT absence.id, jour, nom, email FROM absence "
-        sql += "JOIN intervenant ON absence.id_intervenant=intervenant.id "
-        sql += "WHERE mail_envoye='false' AND regularisee='false' AND jour <= '" + date + "' "
+        sql = "SELECT absence.id, jour, nom, email "
+        sql += "FROM absence "
+        sql += "JOIN intervenant "
+        sql += "ON absence.id_intervenant=intervenant.id "
+        sql += "WHERE mail_envoye='false' "
+        sql += "AND regularisee='false' "
+        sql += "AND jour <= '" + date + "' "
         if not req.exec_(sql):
             print req.lastError().text()
             print req.lastQuery()
@@ -203,12 +244,13 @@ class GestionAbsences(QTabWidget):
 
         self.ui.leSujet.setText(sujet)
         self.ui.teCorps.setText(u"""Bonjour,
-Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous n'ayez ni rattrapé ni justifié cette absence.
+Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous""" +
+""" n'ayez ni rattrapé ni justifié cette absence.
 
 Cordialement,
 Aurore JEDRZEJAK""")
 
-    def refresh(self, tl = None, br = None):
+    def refresh(self, tl=None, br=None):
         self.modelIntervenant.submitAll()
         self.modelAbsence.submitAll()
 
@@ -227,33 +269,9 @@ Aurore JEDRZEJAK""")
                 QLineEdit.Password)
         password = str(result[0])
         if result[1]:
-            try:
-                self.__ms.envoiMail(dest, sujet, corps,
-                        password)
-                # Mise à jour de la base
-                sql = "UPDATE absence "
-                sql += "SET mail_envoye=1 "
-                sql += "WHERE id=" + str(self.__absences[index]["id"])
-                req = QSqlQuery()
-                if not req.exec_(sql):
-                    print "SQL error"
-                    print req.lastError().text()
-                    print req.lastQuery()
-                else:
-                    self.refresh()
-            except SMTPAuthenticationError:
-                QMessageBox.critical(self,
-                        "Erreur d'authentification",
-                        "Login et mot de passe " +
-                        "incorrects.<br />(login "
-                        + self.__conf["email"] + ")")
-            except gaierror:
-                QMessageBox.critical(self,
-                        "Erreur de connection",
-                        "Impossible de contacter le " +
-                        "serveur.<br/>Veuillez " +
-                        u"vérifier la connexion à " +
-                        "internet.")
+            self.activerMailComposer(False)
+            self.ms.envoiMail(dest, sujet, corps,
+                password)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -261,7 +279,7 @@ if __name__ == "__main__":
     locale = QLocale.system().name()
     translator = QTranslator()
     translator.load(QString("qt_") + locale,
-            QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+        QLibraryInfo.location(QLibraryInfo.TranslationsPath))
     app.installTranslator(translator)
 
     # Configuration de la base de données

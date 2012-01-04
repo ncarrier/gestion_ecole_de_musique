@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 class Config():
     _instance = None
     _path = "private/config"
@@ -46,6 +47,6 @@ if __name__ == "__main__":
     keys = c.keys()
     for k in keys:
         print k + " = " + c[k]
-    
+
     c["test"] = "tirlibibi"
     c.close()
