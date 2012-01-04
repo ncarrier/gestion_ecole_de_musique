@@ -46,8 +46,8 @@ class MailSender(QThread):
         self.__password = password
 
         self.start()
-        self.__timer.start(5000)
-        self.connect(self.__timer, SIGNAL("timeout()"), self.quit)
+        self.__timer.start(timeout * 1000)
+        self.connect(self.__timer, SIGNAL("timeout()"), self.timeout)
 
     def run(self):
         u"""Surchage de la méthode QThread.run()
@@ -73,4 +73,5 @@ class MailSender(QThread):
 # slots
     def timeout(self):
         u"""Exécuté à l'expiration du __timer"""
-        self.sentSignal.emit(MailSender.MAIL_ERROR_NONE)
+        self.sentSignal.emit(MailSender.MAIL_ERROR_TIMEOUT)
+        self.terminate()

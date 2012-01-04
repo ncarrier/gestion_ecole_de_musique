@@ -24,7 +24,7 @@ class GestionAbsences(QTabWidget):
         monEcran = QDesktopWidget()
         monEcran.screenGeometry(screenIndex).width()
         monEcran.screenGeometry(screenIndex).height()
-        self.ms = MailSender()
+        self.ms = MailSender(self)
         self.createWidgets()
         self.verifierAbsences()
         self.__conf = Config.getInstance()
@@ -84,42 +84,44 @@ class GestionAbsences(QTabWidget):
             SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
             self.refresh)
         self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"), self.envoyerMail)
-        self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"), self.refresh)
 
         self.connect(self.ms, SIGNAL("sentSignal(int)"), self.mailResult)
 
     def mailResult(self, errCode):
-        self.activerMailComposer(True)
         if errCode == MailSender.MAIL_ERROR_NONE:
             # Mail envoyé, mise à jour de la base
             index = self.ui.cbAbsence.currentIndex()
 
             sql = "UPDATE absence "
-            sql += "SET mail_envoye=1 "
+            sql += "SET mail_envoye='true' "
             sql += "WHERE id=" + str(self.__absences[index]["id"])
             req = QSqlQuery()
             if not req.exec_(sql):
-                # TODO afficher une boîte de dialogue
-                print "SQL error"
-                print req.lastError().text()
-                print req.lastQuery()
-            else:
-                self.refresh()
+                QMessageBox.critical(self, u"Erreur de base de données",
+                    u"Le mail a été envoyé mais impossible de <br />" +
+                    u"l'enregistrer dans la base.")
 
+                # TODO logger
+                print "SQL error"
+                print str(req.lastError().text().toUtf8())
+                print req.lastQuery()
         elif (errCode == MailSender.MAIL_ERROR_TIMEOUT or
             errCode == MailSender.MAIL_ERROR_CONNECTION):
             QMessageBox.critical(self, "Erreur de connection",
-                "Impossible de contacter le serveur.<br/>" +
-                "Veuillez vérifier la connexion à internet.")
+                u"Impossible de contacter le serveur.<br />" +
+                u"Veuillez vérifier la connexion à internet, <br />" +
+                u"ainsi que l'adresse du serveur de messagerie.")
         elif errCode == MailSender.MAIL_ERROR_AUTHENTICATION:
             QMessageBox.critical(self, "Erreur d'authentification",
-                "Login et mot de passe incorrects.<br />(login "
+                "Indentifiants incorrects.<br />(login "
                 + self.__conf["email"] + ")")
         else:  # MailSender.MAIL_ERROR_OTHER:
             QMessageBox.critical(self, "Erreur inconnue",
                 "Une erreur inconnue s'est produite.<br />(login '"
                 + self.__conf["email"] + "')")
             # TODO logger l'erreur réelle à la levée de l'exception
+
+        self.refresh()
 
     def supprimerAbsence(self):
         index = self.ui.tvAbsences.currentIndex()
@@ -162,9 +164,9 @@ class GestionAbsences(QTabWidget):
     def nouveauAbsence(self):
         self.modelAbsence.insertRow(0)
         index = self.modelAbsence.index(0, 3)
-        self.modelAbsence.setData(index, "0")
+        self.modelAbsence.setData(index, "false")
         index = self.modelAbsence.index(0, 4)
-        self.modelAbsence.setData(index, "0")
+        self.modelAbsence.setData(index, "false")
 
     def nouveauIntervenant(self):
         self.modelIntervenant.insertRows(0)
@@ -245,7 +247,7 @@ class GestionAbsences(QTabWidget):
         self.ui.leSujet.setText(sujet)
         self.ui.teCorps.setText(u"""Bonjour,
 Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous""" +
-""" n'ayez ni rattrapé ni justifié cette absence.
+u""" n'ayez ni rattrapé ni justifié cette absence.
 
 Cordialement,
 Aurore JEDRZEJAK""")
@@ -261,7 +263,7 @@ Aurore JEDRZEJAK""")
     def envoyerMail(self):
         index = self.ui.cbAbsence.currentIndex()
         dest = str(self.__absences[index]["adresse"])
-        sujet = str(self.ui.leSujet.text())
+        sujet = str(self.ui.leSujet.text().toUtf8())
         corps = self.ui.teCorps.toPlainText().__str__()
         result = QInputDialog.getText(self, "Mot de passe",
                 "Veuillez saisir le mot de passe<br /> " +
