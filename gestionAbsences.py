@@ -172,6 +172,7 @@ class GestionAbsences(QTabWidget):
         self.modelIntervenant.insertRows(0)
 
     def activerMailComposer(self, actif):
+        """Active/désactive les contrôles de l'onglet d'écriture d'emails"""
         self.ui.cbAbsence.setEnabled(actif)
         self.ui.pbEnvoyer.setEnabled(actif)
         self.ui.leSujet.setEnabled(actif)
@@ -204,6 +205,7 @@ class GestionAbsences(QTabWidget):
             self.ui.leSujet.setText("")
             self.ui.teCorps.setText("")
             self.activerMailComposer(False)
+            self.ui.pbEnvoyer.setText("Envoyer")
             return
         else:
             self.activerMailComposer(True)
@@ -250,6 +252,8 @@ class GestionAbsences(QTabWidget):
         date + u""", car cette absence date déjà de plus de deux semaines.
 Merci,
 Aurore JEDRZEJAK""")
+        self.ui.pbEnvoyer.setText(u"Envoyer à <" +
+            self.__absences[index]["adresse"] + ">")
 
     def refresh(self, tl=None, br=None):
         self.modelIntervenant.submitAll()
