@@ -15,6 +15,7 @@ from gestionAbsencesUI import Ui_gestionAbsences
 from mail import MailSender
 from absencedelegate import AbsenceDelegate
 from config import Config
+from config import ConfigUI
 
 
 class GestionAbsences(QTabWidget):
@@ -32,6 +33,8 @@ class GestionAbsences(QTabWidget):
     def createWidgets(self):
         self.ui = Ui_gestionAbsences()
         self.ui.setupUi(self)
+        self.configTab = ConfigUI(self)
+        self.addTab(self.configTab, "Configuration")
 
         self.modelIntervenant = QSqlTableModel(self)
         self.modelIntervenant.setTable("intervenant")
@@ -184,7 +187,7 @@ class GestionAbsences(QTabWidget):
         # Vérification des mails à envoyer
         req = QSqlQuery()
         date = QDate.currentDate()
-        date = date.addDays(int(self.conf["duree"]))
+        date = date.addDays(-int(self.conf["duree"]))
         date = date.toString(Qt.ISODate)
 
         sql = "SELECT COUNT(*) FROM absence "
