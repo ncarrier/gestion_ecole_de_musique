@@ -14,7 +14,7 @@
    <string>Gestion absences</string>
   </property>
   <property name="currentIndex">
-   <number>1</number>
+   <number>0</number>
   </property>
   <widget class="QWidget" name="wGestionAbsences">
    <attribute name="title">
@@ -36,11 +36,8 @@
        </item>
        <item row="0" column="1">
         <widget class="QComboBox" name="cbAbsence">
-         <property name="maximumSize">
-          <size>
-           <width>400</width>
-           <height>16777215</height>
-          </size>
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToContents</enum>
          </property>
         </widget>
        </item>
@@ -132,8 +129,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>250</width>
-            <height>194</height>
+            <width>98</width>
+            <height>78</height>
            </rect>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -225,8 +222,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>250</width>
-            <height>194</height>
+            <width>98</width>
+            <height>78</height>
            </rect>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
