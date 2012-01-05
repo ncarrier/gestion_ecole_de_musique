@@ -26,8 +26,8 @@ class GestionAbsences(QTabWidget):
         monEcran.screenGeometry(screenIndex).height()
         self.ms = MailSender(self)
         self.createWidgets()
+        self.conf = Config.getInstance()
         self.verifierAbsences()
-        self.__conf = Config.getInstance()
 
     def createWidgets(self):
         self.ui = Ui_gestionAbsences()
@@ -114,11 +114,11 @@ class GestionAbsences(QTabWidget):
         elif errCode == MailSender.MAIL_ERROR_AUTHENTICATION:
             QMessageBox.critical(self, "Erreur d'authentification",
                 "Indentifiants incorrects.<br />(login "
-                + self.__conf["email"] + ")")
+ +self.conf["email"] + ")")
         else:  # MailSender.MAIL_ERROR_OTHER:
             QMessageBox.critical(self, "Erreur inconnue",
                 "Une erreur inconnue s'est produite.<br />(login '"
-                + self.__conf["email"] + "')")
+ +self.conf["email"] + "')")
             # TODO logger l'erreur réelle à la levée de l'exception
 
         self.refresh()
@@ -183,7 +183,7 @@ class GestionAbsences(QTabWidget):
         # Vérification des mails à envoyer
         req = QSqlQuery()
         date = QDate.currentDate()
-        date = date.addMonths(-1)
+        date = date.addDays(int(self.conf["duree"]))
         date = date.toString(Qt.ISODate)
 
         sql = "SELECT COUNT(*) FROM absence "
@@ -245,11 +245,10 @@ class GestionAbsences(QTabWidget):
         sujet = "Absence du " + date
 
         self.ui.leSujet.setText(sujet)
-        self.ui.teCorps.setText(u"""Bonjour,
-Vous avez été absent le """ + date + u""" et à ce jour, il semble que vous""" +
-u""" n'ayez ni rattrapé ni justifié cette absence.
-
-Cordialement,
+        self.ui.teCorps.setText(u"""Bonjour,\n"""
+        """Pourrais-tu me dire rapidement quand tu comptes rattraper tes cours du """ +
+        date + u""", car cette absence date déjà de plus de deux semaines.
+Merci,
 Aurore JEDRZEJAK""")
 
     def refresh(self, tl=None, br=None):
@@ -294,5 +293,5 @@ if __name__ == "__main__":
     ui.setGeometry(QRect(100, 20, 700, 400))
     ui.show()
     ret = app.exec_()
-
+    ui.conf.close()
     sys.exit(ret)

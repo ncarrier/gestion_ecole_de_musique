@@ -6,3 +6,8 @@ Enregistrer la taille de la fenêtre dans le fichier de configuration
 onglet options:
 	spin box pour durée et combo box pour unité jour/semaine/mois
 Gestion d'erreurs / Sauvegarde de logs
+
+Au bout d'une autre période, après qu'un mail a déjà été envoyé, reproposer d'en
+envoyer un deuxième
+
+faire que la gestion du fichier de config soit robuste aux lignes vides

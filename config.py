@@ -35,7 +35,7 @@ class Config():
         self.__config[key] = value
 
     def close(self):
-        f = open(self.__path, "w")
+        f = open(self._path, "w")
         keys = self.__config.keys()
         for k in keys:
             f.write(k + "=" + self[k] + "\n")
