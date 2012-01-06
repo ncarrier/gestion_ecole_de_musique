@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+__all__ = ["ConfigUI", "Config"]
+
 from PyQt4.QtCore import SIGNAL
 from PyQt4.QtGui import QWidget
 

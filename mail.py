@@ -1,14 +1,54 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-u"""Module d'envoi d'emails
-TODO : supporter d'autres fournisseurs d'adresse mail que gmail"""
-from smtplib import SMTP_SSL, SMTPAuthenticationError
-from socket import gaierror
 
+__all__ = ["EmailUI"]
+
+u"""Module d'envoi d'emails
+
+Implémente une ui pour la saisie d'emails ainsi que les mécanismes pour l'envoi
+effectif
+
+TODO : supporter d'autres fournisseurs d'adresse mail que gmail
+
+"""
+
+from socket import gaierror
 from email.MIMEText import MIMEText
+from smtplib import SMTP_SSL, SMTPAuthenticationError
+
 from PyQt4.QtCore import pyqtSignal, SIGNAL, QTimer, QThread
+from PyQt4.QtGui import QWidget
 
 from config import Config
+from emailUI import Ui_email
 
+
+class EmailUI(QWidget):
+    """Classe chargée de l'interface d'envoi d'emails"""
+    def __init__(self, parent=None):
+        super(EmailUI, self).__init__(parent)
+        self.__conf = Config.getInstance()
+        self.createWidgets()
+
+    def createWidgets(self):
+        self.ui = Ui_email()
+        self.ui.setupUi(self)
+#        self.ui.leEmail.setText(self.__conf["email"])
+#        self.ui.leEmail.setProperty("name", "email")
+#        self.ui.leServeur.setText(self.__conf["serveur"])
+#        self.ui.leServeur.setProperty("name", "serveur")
+#        self.ui.sbDuree.setValue(int(self.__conf["duree"]))
+#        self.ui.sbDuree.setProperty("name", "duree")
+#
+#        self.connect(self.ui.leEmail, SIGNAL("textChanged(QString)"),
+#            self.valueChanged)
+#        self.connect(self.ui.leServeur, SIGNAL("textChanged(QString)"),
+#            self.valueChanged)
+#        self.connect(self.ui.sbDuree, SIGNAL("valueChanged(QString)"),
+#            self.valueChanged)
+
+#    def valueChanged(self, value):
+#        self.__conf[str(self.sender().property("name").toString())] = str(value)
 
 class MailSender(QThread):
 # constantes
@@ -75,3 +115,24 @@ class MailSender(QThread):
         u"""Exécuté à l'expiration du __timer"""
         self.sentSignal.emit(MailSender.MAIL_ERROR_TIMEOUT)
         self.terminate()
+
+
+if __name__ == "__main__":
+    """Main de test"""
+    import sys
+    from PyQt4.QtGui import QApplication
+    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator, QString
+
+
+    app = QApplication(sys.argv)
+
+    locale = QLocale.system().name()
+    translator = QTranslator()
+    translator.load(QString("qt_") + locale,
+        QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+    app.installTranslator(translator)
+
+    ui = EmailUI()
+    ui.show()
+    ret = app.exec_()
+    sys.exit(ret)
