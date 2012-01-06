@@ -14,27 +14,34 @@ class ConfigUI(QWidget):
     def __init__(self, parent=None):
         super(ConfigUI, self).__init__(parent)
         self.__conf = Config.getInstance()
-        self.createWidgets()
+        self.__createWidgets()
 
-    def createWidgets(self):
+    def __createWidgets(self):
+        """Créée les widgets de l'interface graphique"""
         self.ui = Ui_config()
         self.ui.setupUi(self)
         self.ui.leEmail.setText(self.__conf["email"])
         self.ui.leEmail.setProperty("name", "email")
-        self.ui.leServeur.setText(self.__conf["serveur"])
-        self.ui.leServeur.setProperty("name", "serveur")
+        self.ui.leSignature.setText(self.__conf["signature"])
+        self.ui.leSignature.setProperty("name", "signature")
         self.ui.sbDuree.setValue(int(self.__conf["duree"]))
         self.ui.sbDuree.setProperty("name", "duree")
+        self.ui.leServeur.setText(self.__conf["serveur"])
+        self.ui.leServeur.setProperty("name", "serveur")
 
         self.connect(self.ui.leEmail, SIGNAL("textChanged(QString)"),
-            self.valueChanged)
-        self.connect(self.ui.leServeur, SIGNAL("textChanged(QString)"),
-            self.valueChanged)
+            self.__valueChanged)
+        self.connect(self.ui.leSignature, SIGNAL("textChanged(QString)"),
+            self.__valueChanged)
         self.connect(self.ui.sbDuree, SIGNAL("valueChanged(QString)"),
-            self.valueChanged)
+            self.__valueChanged)
+        self.connect(self.ui.leServeur, SIGNAL("textChanged(QString)"),
+            self.__valueChanged)
 
-    def valueChanged(self, value):
-        self.__conf[str(self.sender().property("name").toString())] = str(value)
+    def __valueChanged(self, value):
+        """Enregistre la valeur modifiée, dans la propriété correspondante"""
+        key = str(self.sender().property("name").toString())
+        self.__conf[key] = str(value)
 
     def __del__(self):
         self.__conf.close()
@@ -68,7 +75,10 @@ class Config():
         return self.__config.keys()
 
     def __getitem__(self, key):
-        return self.__config[key]
+        if key in self.keys():
+            return self.__config[key]
+        else:
+            return ""
 
     def __setitem__(self, key, value):
         self.__config[key] = value
@@ -94,7 +104,6 @@ if __name__ == "__main__":
     from PyQt4.QtGui import QApplication
     from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator, QString
 
-
     app = QApplication(sys.argv)
 
     locale = QLocale.system().name()
@@ -107,4 +116,3 @@ if __name__ == "__main__":
     ui.show()
     ret = app.exec_()
     sys.exit(ret)
-

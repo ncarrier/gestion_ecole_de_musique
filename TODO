@@ -3,11 +3,10 @@ Suppression en cascade des absences quand on supprime un intervenant
 bug affichage nouvelle absence en cours de saisie
 Assistant de premier lancement si pas de fichier de configuration
 Enregistrer la taille de la fenêtre dans le fichier de configuration
-onglet options:
-	spin box pour durée et combo box pour unité jour/semaine/mois
 Gestion d'erreurs / Sauvegarde de logs
 
 Au bout d'une autre période, après qu'un mail a déjà été envoyé, reproposer d'en
-envoyer un deuxième
+envoyer un deuxième, non plutôt mettre un compteur de mails envoyer "i" et
+reproposer à i * le nombre de jours de la durée
 
 faire que la gestion du fichier de config soit robuste aux lignes vides
