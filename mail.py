@@ -182,7 +182,7 @@ Merci,
         self.ui.teCorps.setEnabled(actif)
 
     def __envoyer(self):
-        """Envoyer l'email"""
+        """Envoie l'email"""
         index = self.ui.cbAbsence.currentIndex()
         dest = str(self.__absences[index]["adresse"])
         sujet = str(self.ui.leSujet.text().toUtf8())
@@ -227,7 +227,6 @@ class MailSender(QThread):
 
         """
         self.__timer.setSingleShot(True)
-
         self.__email = MIMEText(corps, 'plain', 'utf-8')
         self.__email['From'] = self.__conf["email"]
         self.__email['To'] = dest
@@ -236,6 +235,7 @@ class MailSender(QThread):
 
         self.start()
         self.__timer.start(timeout * 1000)
+
         self.connect(self.__timer, SIGNAL("timeout()"), self.timeout)
 
     def run(self):

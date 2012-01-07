@@ -1,24 +1,24 @@
-DB_FILE=private/gestionAbsences.db
+DB_FILE=private/gem.db
 
+UI=configUI.py mailUI.py tableUI.py gestionAbsencesUI.py
 
 all:ui db
 
-ui:
-	@echo "Création de l'interface utilisateur"
-	@pyuic4 gestionAbsencesUI.ui -o gestionAbsencesUI.py
-	@pyuic4 interface/config.ui -o configUI.py
-	@pyuic4 interface/mail.ui -o mailUI.py
+ui:$(UI)
 
+%UI.py:interface/%.ui
+	@echo "Création de l'ui" $(subst UI.py,,$@)
+	@pyuic4 $< -o $@
 db:
 	@echo "Création de la structure de la base de données"
-	@cat gestionAbsences.sql | sqlite3 $(DB_FILE)
+	@cat gem.sql | sqlite3 $(DB_FILE)
 data:
 	@echo "Création du jeu de données de test"
 	@cat private/createData.sql | sqlite3 $(DB_FILE)
 
 clean:
 	@echo Nettoyage
-	@rm -f *UI.py
+	@rm -f $(UI)
 	@rm -f *.pyc
 
 db-clean:

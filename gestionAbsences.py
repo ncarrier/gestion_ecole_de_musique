@@ -99,11 +99,9 @@ class GestionAbsences(QTabWidget):
         self.connect(self.ui.supprimerAbsence, SIGNAL("clicked()"),
             self.supprimerAbsence)
         self.connect(self.modelIntervenant,
-            SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
-            self.refresh)
+            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.refresh)
         self.connect(self.modelAbsence,
-            SIGNAL("dataChanged(QModelIndex, QModelIndex)"),
-            self.refresh)
+            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.refresh)
 
     def supprimerAbsence(self):
         index = self.ui.tvAbsences.currentIndex()
@@ -173,7 +171,7 @@ if __name__ == "__main__":
 
     # Configuration de la base de données
     db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName('private/gestionAbsences.db')
+    db.setDatabaseName('private/gem.db')
     db.open()
 
     # Création de l'ui principale et boucle principale
