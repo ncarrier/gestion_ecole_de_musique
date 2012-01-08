@@ -10,3 +10,7 @@ envoyer un deuxième, non plutôt mettre un compteur de mails envoyer "i" et
 reproposer à i * le nombre de jours de la durée
 
 faire que la gestion du fichier de config soit robuste aux lignes vides
+
+stocker la config dans la bdd ?
+    Vraie bonne idée ? Comment on lance l'appli la première fois, et qu'on veut
+    créer la base ?

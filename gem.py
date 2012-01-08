@@ -12,10 +12,10 @@ from PyQt4.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalTableModel
 from PyQt4.QtSql import QSqlQuery, QSqlDatabase
 
 from gemUI import Ui_gestionAbsences
+from intervenant import IntervenantUI
 from mail import MailUI
+from config import ConfigUI, Config
 from absencedelegate import AbsenceDelegate
-from config import Config
-from config import ConfigUI
 
 
 class GestionAbsences(QTabWidget):
@@ -52,28 +52,10 @@ class GestionAbsences(QTabWidget):
         # Ajout des onglets
         self.mailTab = MailUI(self)
         self.addTab(self.mailTab, "Email")
+        self.intervenantTab = IntervenantUI(self)
+        self.addTab(self.intervenantTab, "Intervenants")
         self.configTab = ConfigUI(self)
         self.addTab(self.configTab, "Configuration")
-
-        # Gros bazard à refactorer
-        self.modelIntervenant = QSqlTableModel(self)
-        self.modelIntervenant.setTable("intervenant")
-
-        self.modelIntervenant.setHeaderData(1, Qt.Horizontal, "Nom")
-        self.modelIntervenant.setHeaderData(2, Qt.Horizontal, u"Téléphone")
-        self.modelIntervenant.setHeaderData(3, Qt.Horizontal, "Email")
-        self.modelIntervenant.setEditStrategy(QSqlTableModel.OnFieldChange)
-        self.modelIntervenant.select()
-
-        self.ui.tvIntervenants.setModel(self.modelIntervenant)
-        self.ui.tvIntervenants.setColumnHidden(0, True)
-        self.ui.tvIntervenants.sortByColumn(1, Qt.AscendingOrder)
-        self.ui.tvIntervenants.resizeColumnsToContents()
-
-        self.connect(self.ui.nouveauIntervenant, SIGNAL("clicked()"),
-            self.nouveauIntervenant)
-        self.connect(self.ui.supprimerIntervenant, SIGNAL("clicked()"),
-            self.supprimerIntervenant)
 
         self.modelAbsence = QSqlRelationalTableModel(self)
         self.modelAbsence.setTable("absence")
@@ -98,8 +80,6 @@ class GestionAbsences(QTabWidget):
             self.nouveauAbsence)
         self.connect(self.ui.supprimerAbsence, SIGNAL("clicked()"),
             self.supprimerAbsence)
-        self.connect(self.modelIntervenant,
-            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.refresh)
         self.connect(self.modelAbsence,
             SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.refresh)
 
@@ -122,25 +102,6 @@ class GestionAbsences(QTabWidget):
             if supprimer == QMessageBox.Yes:
                 self.modelAbsence.removeRows(row, 1)
 
-    def supprimerIntervenant(self):
-        index = self.ui.tvIntervenants.currentIndex()
-        row = index.row()
-        if -1 == index:
-            QMessageBox.information(self,
-                    u"Cliquer sur l'intervenant à supprimer",
-                    u"Veuiller cliquer sur l'une des cases" +
-                    u"de l'intervenant à supprimer avant " +
-                    u"de cliquer sur le bouton supprimer")
-        else:
-            supprimer = QMessageBox.question(self, "Confirmer la suppression",
-                    u"Êtes-vous sûr de vouloir supprimer " +
-                    u"l'intervenant " +
-                    index.sibling(row, 1).data().toString()
-                    + " ? ",
-                    QMessageBox.Yes | QMessageBox.No)
-            if supprimer == QMessageBox.Yes:
-                self.modelIntervenant.removeRows(row, 1)
-
     def nouveauAbsence(self):
         self.modelAbsence.insertRow(0)
         index = self.modelAbsence.index(0, 3)
@@ -148,16 +109,9 @@ class GestionAbsences(QTabWidget):
         index = self.modelAbsence.index(0, 4)
         self.modelAbsence.setData(index, "false")
 
-    def nouveauIntervenant(self):
-        self.modelIntervenant.insertRows(0)
-
     def refresh(self, tl=None, br=None):
-        self.modelIntervenant.submitAll()
         self.modelAbsence.submitAll()
-
-        self.modelIntervenant.select()
         self.modelAbsence.select()
-        self.miseAJour()
 
 
 if __name__ == "__main__":
