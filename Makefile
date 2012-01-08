@@ -1,6 +1,6 @@
 DB_FILE=private/gem.db
 
-UI=configUI.py mailUI.py tableUI.py gestionAbsencesUI.py
+UI=configUI.py mailUI.py tableUI.py gemUI.py
 
 all:ui db
 
@@ -23,6 +23,6 @@ clean:
 
 db-clean:
 	@echo "Suppression de la base de données"
-	@rm -f $(DB_FILE)
+#	@rm -f $(DB_FILE)
 
 mrproper:clean db-clean

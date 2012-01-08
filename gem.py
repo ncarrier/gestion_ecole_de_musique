@@ -11,7 +11,7 @@ from PyQt4.QtGui import QInputDialog, QLineEdit, QAbstractItemView
 from PyQt4.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalTableModel
 from PyQt4.QtSql import QSqlQuery, QSqlDatabase
 
-from gestionAbsencesUI import Ui_gestionAbsences
+from gemUI import Ui_gestionAbsences
 from mail import MailUI
 from absencedelegate import AbsenceDelegate
 from config import Config
