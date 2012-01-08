@@ -46,8 +46,8 @@ class GestionAbsences(QTabWidget):
 #                     self.absenceTab.miseAJour)
 
     def createWidgets(self):
-        self.ui = Ui_gestionAbsences()
-        self.ui.setupUi(self)
+        self.__ui = Ui_gestionAbsences()
+        self.__ui.setupUi(self)
 
         # Ajout des onglets
         self.mailTab = MailUI(self)
@@ -69,22 +69,22 @@ class GestionAbsences(QTabWidget):
         self.modelAbsence.setEditStrategy(QSqlTableModel.OnFieldChange)
         self.modelAbsence.select()
 
-        self.ui.tvAbsences.setModel(self.modelAbsence)
-        self.ui.tvAbsences.setColumnHidden(0, True)
-        self.ui.tvAbsences.setItemDelegate(AbsenceDelegate(self, [1], [3, 4]))
-        self.ui.tvAbsences.sortByColumn(1, Qt.AscendingOrder)
-        self.ui.tvAbsences.resizeColumnsToContents()
-        self.ui.tvAbsences.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        self.__ui.tvAbsences.setModel(self.modelAbsence)
+        self.__ui.tvAbsences.setColumnHidden(0, True)
+        self.__ui.tvAbsences.setItemDelegate(AbsenceDelegate(self, [1], [3, 4]))
+        self.__ui.tvAbsences.sortByColumn(1, Qt.AscendingOrder)
+        self.__ui.tvAbsences.resizeColumnsToContents()
+        self.__ui.tvAbsences.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
-        self.connect(self.ui.nouveauAbsence, SIGNAL("clicked()"),
+        self.connect(self.__ui.nouveauAbsence, SIGNAL("clicked()"),
             self.nouveauAbsence)
-        self.connect(self.ui.supprimerAbsence, SIGNAL("clicked()"),
+        self.connect(self.__ui.supprimerAbsence, SIGNAL("clicked()"),
             self.supprimerAbsence)
         self.connect(self.modelAbsence,
             SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.refresh)
 
     def supprimerAbsence(self):
-        index = self.ui.tvAbsences.currentIndex()
+        index = self.__ui.tvAbsences.currentIndex()
         row = index.row()
         if -1 == index:
             QMessageBox.information(self,
@@ -128,10 +128,10 @@ if __name__ == "__main__":
     db.setDatabaseName('private/gem.db')
     db.open()
 
-    # Création de l'ui principale et boucle principale
+    # Création de l'__ui principale et boucle principale
     ui = GestionAbsences()
     ui.setGeometry(QRect(100, 20, 700, 400))
     ui.show()
     ret = app.exec_()
-    ui.conf.close()
+    __ui.conf.close()
     sys.exit(ret)

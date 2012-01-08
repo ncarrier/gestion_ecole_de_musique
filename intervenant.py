@@ -23,38 +23,37 @@ class IntervenantUI(QWidget):
 
     def __createWidgets(self):
         """Créée les widgets de l'interface graphique"""
-        self.ui = Ui_table()
-        self.ui.setupUi(self)
+        self.__ui = Ui_table()
+        self.__ui.setupUi(self)
         # Gros bazard à refactorer
-        self.modelIntervenant = QSqlTableModel(self)
-        self.modelIntervenant.setTable("intervenant")
+        self.__modele = QSqlTableModel(self)
+        self.__modele.setTable("intervenant")
 
-        self.modelIntervenant.setHeaderData(1, Qt.Horizontal, "Nom")
-        self.modelIntervenant.setHeaderData(2, Qt.Horizontal, u"Téléphone")
-        self.modelIntervenant.setHeaderData(3, Qt.Horizontal, "Email")
-        self.modelIntervenant.setEditStrategy(QSqlTableModel.OnFieldChange)
-        self.modelIntervenant.select()
+        self.__modele.setHeaderData(1, Qt.Horizontal, "Nom")
+        self.__modele.setHeaderData(2, Qt.Horizontal, u"Téléphone")
+        self.__modele.setHeaderData(3, Qt.Horizontal, "Email")
+        self.__modele.setEditStrategy(QSqlTableModel.OnFieldChange)
+        self.__modele.select()
 
-        self.ui.tv.setModel(self.modelIntervenant)
-        self.ui.tv.setColumnHidden(0, True)
-        self.ui.tv.sortByColumn(1, Qt.AscendingOrder)
-        self.ui.tv.resizeColumnsToContents()
+        self.__ui.tv.setModel(self.__modele)
+        self.__ui.tv.setColumnHidden(0, True)
+        self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
+        self.__ui.tv.resizeColumnsToContents()
 
-        self.connect(self.ui.pbNouveau, SIGNAL("clicked()"),
-            self.nouveauIntervenant)
-        self.connect(self.ui.pbSupprimer, SIGNAL("clicked()"),
-            self.supprimerIntervenant)
+        self.connect(self.__ui.pbNouveau, SIGNAL("clicked()"), self.__nouveau)
+        self.connect(self.__ui.pbSupprimer, SIGNAL("clicked()"),
+            self.__supprimer)
 
-        self.connect(self.modelIntervenant,
-            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.emitMajBdd)
+        self.connect(self.__modele,
+            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.__emitMajBdd)
 
-    def emitMajBdd(self):
+    def __emitMajBdd(self):
         u"""Informe les observers que la BDD a été modifiée"""
         self.majBdd.emit()
 
-    def supprimerIntervenant(self):
+    def __supprimer(self):
         """Supprime un intervenant de la liste, après confirmation"""
-        index = self.ui.tv.currentIndex()
+        index = self.__ui.tv.currentIndex()
         row = index.row()
         if -1 == index:
             QMessageBox.information(self,
@@ -70,15 +69,17 @@ class IntervenantUI(QWidget):
                     + " ? ",
                     QMessageBox.Yes | QMessageBox.No)
             if supprimer == QMessageBox.Yes:
-                self.modelIntervenant.removeRows(row, 1)
+                self.__modele.removeRows(row, 1)
 
-    def nouveauIntervenant(self):
+    def __nouveau(self):
         """Crée un nouvel intervenant vide"""
-        self.modelIntervenant.insertRow(0)
+        self.__modele.insertRow(0)
 
+# slots
     def miseAJour(self):
-        self.modelIntervenant.submitAll()
-        self.modelIntervenant.select()
+        """Écrit les données en base et relit les données"""
+        self.__modele.submitAll()
+        self.__modele.select()
 
 if __name__ == "__main__":
     """Main de test"""

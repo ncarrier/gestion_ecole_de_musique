@@ -18,24 +18,24 @@ class ConfigUI(QWidget):
 
     def __createWidgets(self):
         """Créée les widgets de l'interface graphique"""
-        self.ui = Ui_config()
-        self.ui.setupUi(self)
-        self.ui.leEmail.setText(self.__conf["email"])
-        self.ui.leEmail.setProperty("name", "email")
-        self.ui.leSignature.setText(self.__conf["signature"])
-        self.ui.leSignature.setProperty("name", "signature")
-        self.ui.sbDuree.setValue(int(self.__conf["duree"]))
-        self.ui.sbDuree.setProperty("name", "duree")
-        self.ui.leServeur.setText(self.__conf["serveur"])
-        self.ui.leServeur.setProperty("name", "serveur")
+        self.__ui = Ui_config()
+        self.__ui.setupUi(self)
+        self.__ui.leEmail.setText(self.__conf["email"])
+        self.__ui.leEmail.setProperty("name", "email")
+        self.__ui.leSignature.setText(self.__conf["signature"])
+        self.__ui.leSignature.setProperty("name", "signature")
+        self.__ui.sbDuree.setValue(int(self.__conf["duree"]))
+        self.__ui.sbDuree.setProperty("name", "duree")
+        self.__ui.leServeur.setText(self.__conf["serveur"])
+        self.__ui.leServeur.setProperty("name", "serveur")
 
-        self.connect(self.ui.leEmail, SIGNAL("textChanged(QString)"),
+        self.connect(self.__ui.leEmail, SIGNAL("textChanged(QString)"),
             self.__valueChanged)
-        self.connect(self.ui.leSignature, SIGNAL("textChanged(QString)"),
+        self.connect(self.__ui.leSignature, SIGNAL("textChanged(QString)"),
             self.__valueChanged)
-        self.connect(self.ui.sbDuree, SIGNAL("valueChanged(QString)"),
+        self.connect(self.__ui.sbDuree, SIGNAL("valueChanged(QString)"),
             self.__valueChanged)
-        self.connect(self.ui.leServeur, SIGNAL("textChanged(QString)"),
+        self.connect(self.__ui.leServeur, SIGNAL("textChanged(QString)"),
             self.__valueChanged)
 
     def __valueChanged(self, value):

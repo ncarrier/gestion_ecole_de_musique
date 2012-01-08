@@ -5,7 +5,7 @@ __all__ = ["MailUI"]
 
 u"""Module d'envoi d'emails
 
-Implémente une ui pour la saisie d'emails ainsi que les mécanismes pour l'envoi
+Implémente une __ui pour la saisie d'emails ainsi que les mécanismes pour l'envoi
 effectif
 
 TODO : supporter d'autres fournisseurs d'adresse mail que gmail
@@ -39,34 +39,34 @@ class MailUI(QWidget):
 
     def __createWidgets(self):
         u"""Créée les widgets de l'interface graphique"""
-        self.ui = Ui_mail()
-        self.ui.setupUi(self)
+        self.__ui = Ui_mail()
+        self.__ui.setupUi(self)
 
         #Connection des signaux
-        self.connect(self.ui.cbAbsence, SIGNAL("currentIndexChanged(int)"),
+        self.connect(self.__ui.cbAbsence, SIGNAL("currentIndexChanged(int)"),
             self.__majUI)
         self.connect(self.__ms, SIGNAL("sentSignal(int)"), self.__resulatEnvoi)
-        self.connect(self.ui.pbEnvoyer, SIGNAL("clicked()"), self.__envoyer)
+        self.connect(self.__ui.pbEnvoyer, SIGNAL("clicked()"), self.__envoyer)
         self.connect(self, SIGNAL("majBdd()"), self.miseAJour)
 
     def __majUI(self, index):
-        u"""Rafraîchit le contenu de l'ui quand l'absence sélectionée change"""
+        u"""Rafraîchit le contenu de l'__ui quand l'absence sélectionée change"""
         date = self.__absences[index]["date"].toString(Qt.SystemLocaleLongDate)
         sujet = "Absence du " + date
 
-        self.ui.leSujet.setText(sujet)
-        self.ui.teCorps.setText(u"""Bonjour,\n"""
+        self.__ui.leSujet.setText(sujet)
+        self.__ui.teCorps.setText(u"""Bonjour,\n"""
         u"Pourrais-tu me dire rapidement quand tu comptes rattraper tes " +
         u"cours du " + date + u", car cette absence date déjà de plus de " +
         u"""deux semaines.
 Merci,
 """ + self.__conf["signature"])
-        self.ui.pbEnvoyer.setText(u"Envoyer à <" +
+        self.__ui.pbEnvoyer.setText(u"Envoyer à <" +
             self.__absences[index]["adresse"] + ">")
 
     def miseAJour(self):
         u"""Liste les absences pouvant donner lieu à un email de rappel"""
-        self.ui.cbAbsence.clear()
+        self.__ui.cbAbsence.clear()
 
         # Vérification des mails à envoyer
         req = QSqlQuery()
@@ -88,11 +88,11 @@ Merci,
         label = str(nbMails) + " absence"
         if nbMails == 0:
             label += " :"
-            self.ui.lAbsence.setText(label)
-            self.ui.leSujet.setText("")
-            self.ui.teCorps.setText("")
+            self.__ui.lAbsence.setText(label)
+            self.__ui.leSujet.setText("")
+            self.__ui.teCorps.setText("")
             self.__activerUi(False)
-            self.ui.pbEnvoyer.setText("Envoyer")
+            self.__ui.pbEnvoyer.setText("Envoyer")
             return
         else:
             self.__activerUi(True)
@@ -100,7 +100,7 @@ Merci,
         if nbMails > 1:
             label += "s"
         label += " :"
-        self.ui.lAbsence.setText(label)
+        self.__ui.lAbsence.setText(label)
 
         sql = "SELECT absence.id, jour, nom, email "
         sql += "FROM absence "
@@ -127,7 +127,7 @@ Merci,
                 self.__absences.append(absence)
                 item = absence["nom"] + " le "
                 item += absence["date"].toString(Qt.SystemLocaleLongDate)
-                self.ui.cbAbsence.addItem(item)
+                self.__ui.cbAbsence.addItem(item)
 
     def __resulatEnvoi(self, errCode):
         u"""Slot notifié quand l'envoi du mail est fini
@@ -138,7 +138,7 @@ Merci,
         """
         if errCode == MailSender.MAIL_ERROR_NONE:
             # Mail envoyé, mise à jour de la base
-            index = self.ui.cbAbsence.currentIndex()
+            index = self.__ui.cbAbsence.currentIndex()
 
             sql = "UPDATE absence "
             sql += "SET mail_envoye='true' "
@@ -176,17 +176,17 @@ Merci,
 
     def __activerUi(self, actif):
         """Active/désactive les contrôles de l'onglet d'écriture d'emails"""
-        self.ui.cbAbsence.setEnabled(actif)
-        self.ui.pbEnvoyer.setEnabled(actif)
-        self.ui.leSujet.setEnabled(actif)
-        self.ui.teCorps.setEnabled(actif)
+        self.__ui.cbAbsence.setEnabled(actif)
+        self.__ui.pbEnvoyer.setEnabled(actif)
+        self.__ui.leSujet.setEnabled(actif)
+        self.__ui.teCorps.setEnabled(actif)
 
     def __envoyer(self):
         """Envoie l'email"""
-        index = self.ui.cbAbsence.currentIndex()
+        index = self.__ui.cbAbsence.currentIndex()
         dest = str(self.__absences[index]["adresse"])
-        sujet = str(self.ui.leSujet.text().toUtf8())
-        corps = self.ui.teCorps.toPlainText().__str__()
+        sujet = str(self.__ui.leSujet.text().toUtf8())
+        corps = self.__ui.teCorps.toPlainText().__str__()
         result = QInputDialog.getText(self, "Mot de passe",
                 "Veuillez saisir le mot de passe<br /> " +
                 "de votre compte de messagerie",
