@@ -3,13 +3,17 @@
 
 __all__ = ["ConfigUI", "Config"]
 
-from PyQt4.QtCore import SIGNAL
+from PyQt4.QtCore import SIGNAL, pyqtSignal
 from PyQt4.QtGui import QWidget
 
 from configUI import Ui_config
 
 
 class ConfigUI(QWidget):
+# signaux
+    u"""Signal envoyé quand la duree a été modifiée"""
+    majDuree = pyqtSignal()
+
     """Classe chargée de l'interface de configuration de l'application"""
     def __init__(self, parent=None):
         super(ConfigUI, self).__init__(parent)
@@ -42,6 +46,8 @@ class ConfigUI(QWidget):
         """Enregistre la valeur modifiée, dans la propriété correspondante"""
         key = str(self.sender().property("name").toString())
         self.__conf[key] = str(value)
+        if key == "duree":
+            self.majDuree.emit()
 
     def __del__(self):
         self.__conf.close()

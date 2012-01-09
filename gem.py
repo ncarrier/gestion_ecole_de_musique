@@ -2,20 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt4.QtCore import Qt, SIGNAL, QDate, QLocale, QTranslator, QString
-from PyQt4.QtCore import QLibraryInfo, QRect
+from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo, QRect
 
-from PyQt4.QtGui import QApplication, QTabWidget, QDesktopWidget, QMessageBox
-from PyQt4.QtGui import QInputDialog, QLineEdit, QAbstractItemView
+from PyQt4.QtGui import QApplication, QTabWidget, QDesktopWidget
 
-from PyQt4.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalTableModel
-from PyQt4.QtSql import QSqlQuery, QSqlDatabase
+from PyQt4.QtSql import QSqlDatabase
 
 from gemUI import Ui_gestionAbsences
-from intervenant import IntervenantUI
 from mail import MailUI
+from absence import AbsenceUI
+from intervenant import IntervenantUI
 from config import ConfigUI, Config
-from absencedelegate import AbsenceDelegate
 
 
 class GestionAbsences(QTabWidget):
@@ -29,21 +26,11 @@ class GestionAbsences(QTabWidget):
         self.conf = Config.getInstance()
         self.mailTab.miseAJour()
 
-        # La modification de données sur un onglet fait raffraîchir les autres
-        # TODO à activer quand les tabs intervenant et absence auront ete
-        # refactorés
-#        self.connect(self.mailTab.majBdd, SIGNAL("majBdd(int)"),
-#                     self.absenceTab.miseAJour)
-#        self.connect(self.mailTab.majBdd, SIGNAL("majBdd(int)"),
-#                     self.intervenantTab.miseAJour)
-#        self.connect(self.absenceTab.majBdd, SIGNAL("majBdd(int)"),
-#                     self.emailTab.miseAJour)
-#        self.connect(self.absenceTab.majBdd, SIGNAL("majBdd(int)"),
-#                     self.intervenantTab.miseAJour)
-#        self.connect(self.intervenantTab.majBdd, SIGNAL("majBdd(int)"),
-#                     self.emailTab.miseAJour)
-#        self.connect(self.intervenantTab.majBdd, SIGNAL("majBdd(int)"),
-#                     self.absenceTab.miseAJour)
+        self.mailTab.majBdd.connect(self.absenceTab.miseAJour)
+        self.absenceTab.majBdd.connect(self.mailTab.miseAJour)
+        self.intervenantTab.majBdd.connect(self.mailTab.miseAJour)
+        self.intervenantTab.majBdd.connect(self.absenceTab.miseAJour)
+        self.configTab.majDuree.connect(self.mailTab.miseAJour)
 
     def createWidgets(self):
         self.__ui = Ui_gestionAbsences()
@@ -51,67 +38,13 @@ class GestionAbsences(QTabWidget):
 
         # Ajout des onglets
         self.mailTab = MailUI(self)
-        self.addTab(self.mailTab, "Email")
+        self.addTab(self.mailTab, "Emails")
+        self.absenceTab = AbsenceUI(self)
+        self.addTab(self.absenceTab, "Absences")
         self.intervenantTab = IntervenantUI(self)
         self.addTab(self.intervenantTab, "Intervenants")
         self.configTab = ConfigUI(self)
         self.addTab(self.configTab, "Configuration")
-
-        self.modelAbsence = QSqlRelationalTableModel(self)
-        self.modelAbsence.setTable("absence")
-        self.modelAbsence.setRelation(2, QSqlRelation("intervenant", "id",
-            "nom"))
-
-        self.modelAbsence.setHeaderData(1, Qt.Horizontal, "Jour")
-        self.modelAbsence.setHeaderData(2, Qt.Horizontal, "Intervenant")
-        self.modelAbsence.setHeaderData(3, Qt.Horizontal, u"Régularisée")
-        self.modelAbsence.setHeaderData(4, Qt.Horizontal, u"Email envoyé")
-        self.modelAbsence.setEditStrategy(QSqlTableModel.OnFieldChange)
-        self.modelAbsence.select()
-
-        self.__ui.tvAbsences.setModel(self.modelAbsence)
-        self.__ui.tvAbsences.setColumnHidden(0, True)
-        self.__ui.tvAbsences.setItemDelegate(AbsenceDelegate(self, [1], [3, 4]))
-        self.__ui.tvAbsences.sortByColumn(1, Qt.AscendingOrder)
-        self.__ui.tvAbsences.resizeColumnsToContents()
-        self.__ui.tvAbsences.setEditTriggers(QAbstractItemView.AllEditTriggers)
-
-        self.connect(self.__ui.nouveauAbsence, SIGNAL("clicked()"),
-            self.nouveauAbsence)
-        self.connect(self.__ui.supprimerAbsence, SIGNAL("clicked()"),
-            self.supprimerAbsence)
-        self.connect(self.modelAbsence,
-            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.refresh)
-
-    def supprimerAbsence(self):
-        index = self.__ui.tvAbsences.currentIndex()
-        row = index.row()
-        if -1 == index:
-            QMessageBox.information(self,
-                    u"Cliquer sur l'absence à supprimer",
-                    u"Veuiller cliquer sur l'une des cases" +
-                    u"de l'absence à supprimer avant " +
-                    u"de cliquer sur le bouton supprimer")
-        else:
-            date = index.sibling(row, 1).data().toDate()
-            supprimer = QMessageBox.question(self, "Confirmer la suppression",
-                u"Supprimer l'absence de " +
-                index.sibling(row, 2).data().toString() + " du " +
-                date.toString(Qt.SystemLocaleLongDate) +
-                " ?", QMessageBox.Yes | QMessageBox.No)
-            if supprimer == QMessageBox.Yes:
-                self.modelAbsence.removeRows(row, 1)
-
-    def nouveauAbsence(self):
-        self.modelAbsence.insertRow(0)
-        index = self.modelAbsence.index(0, 3)
-        self.modelAbsence.setData(index, "false")
-        index = self.modelAbsence.index(0, 4)
-        self.modelAbsence.setData(index, "false")
-
-    def refresh(self, tl=None, br=None):
-        self.modelAbsence.submitAll()
-        self.modelAbsence.select()
 
 
 if __name__ == "__main__":
@@ -133,5 +66,5 @@ if __name__ == "__main__":
     ui.setGeometry(QRect(100, 20, 700, 400))
     ui.show()
     ret = app.exec_()
-    __ui.conf.close()
+    ui.conf.close()
     sys.exit(ret)
