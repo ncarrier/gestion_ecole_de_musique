@@ -3,7 +3,7 @@
 
 __all__ = ["AbsenceUI"]
 
-from PyQt4.QtCore import pyqtSignal, SIGNAL, Qt
+from PyQt4.QtCore import pyqtSignal, Qt
 from PyQt4.QtGui import QWidget, QMessageBox
 from PyQt4.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
@@ -45,11 +45,11 @@ class AbsenceUI(QWidget):
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 
-        self.connect(self.__ui.pbNouveau, SIGNAL("clicked()"), self.__nouveau)
-        self.connect(self.__ui.pbSupprimer, SIGNAL("clicked()"),
-            self.__supprimer)
-        self.connect(self.__modele,
-            SIGNAL("dataChanged(QModelIndex, QModelIndex)"), self.__emitMajBdd)
+        self.__ui.pbNouveau.clicked.connect(self.__nouveau)
+        self.__ui.pbSupprimer.clicked.connect(self.__supprimer)
+        self.__modele.dataChanged.connect(self.__emitMajBdd)
+        self.__modele.rowsInserted.connect(self.__emitMajBdd)
+        self.__modele.rowsRemoved.connect(self.__emitMajBdd)
 
     def __emitMajBdd(self):
         u"""Informe les observers que la BDD a été modifiée"""
@@ -72,7 +72,7 @@ class AbsenceUI(QWidget):
                 date.toString(Qt.SystemLocaleLongDate) + " ?",
                 QMessageBox.Yes | QMessageBox.No)
             if supprimer == QMessageBox.Yes:
-                self.__modele.removeRows(row, 1)
+                self.__modele.removeRow(row)
 
     def __nouveau(self):
         u"""Crée une nouvelle absence vide"""

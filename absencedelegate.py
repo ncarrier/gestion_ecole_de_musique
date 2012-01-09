@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 __all__ = ["AbsenceDelegate"]
 
-from PyQt4.QtCore import SIGNAL, QDate, QString, QSize, Qt, QEvent
+from PyQt4.QtCore import QDate, QString, QSize, Qt
 
 from PyQt4.QtGui import QDateEdit, QCheckBox, QFontMetrics, QApplication
-from PyQt4.QtGui import QPalette, QStyle, QStyledItemDelegate
-from PyQt4.QtGui import QAbstractItemDelegate
+from PyQt4.QtGui import QPalette, QStyle
 
 from PyQt4.QtSql import QSqlRelationalDelegate
 
@@ -23,21 +22,6 @@ class AbsenceDelegate(QSqlRelationalDelegate):
         super(AbsenceDelegate, self).__init__(parent)
         self.__dates = dates
         self.__booleens = booleens
-        #self.installEventFilter(self)
-
-#    def eventFilter(self, editor, event):
-#        if event.type() == QEvent.KeyPress:
-#            if event.key() == Qt.Key_Return:
-#                print "Ate key press " + str(event.key())
-#                self.emit(SIGNAL("tutu()"))
-#                self.emit(SIGNAL("closeEditor(QWidget,
-#                    QAbstractItemDelegate.EndEditHint)"),
-#                    editor, QAbstractItemDelegate.EditNextItem)
-#                return True
-#        return super(AbsenceDelegate, self).eventFilter(editor, event)
-
-    def tutu(self):
-        print "tutu"
 
     def createEditor(self, parent, option, index):
         if not index.isValid():

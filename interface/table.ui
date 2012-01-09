@@ -17,7 +17,7 @@
    <item>
     <widget class="QTableView" name="tv">
      <property name="editTriggers">
-      <set>QAbstractItemView::AllEditTriggers</set>
+      <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
@@ -27,12 +27,6 @@
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <property name="horizontalScrollMode">
-      <enum>QAbstractItemView::ScrollPerPixel</enum>
-     </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
      </property>
      <attribute name="horizontalHeaderStretchLastSection">
       <bool>true</bool>
@@ -57,9 +51,6 @@
       </item>
       <item>
        <widget class="QPushButton" name="pbNouveau">
-        <property name="toolTip">
-         <string>Créer un  nouvel élément</string>
-        </property>
         <property name="text">
          <string>Nouveau</string>
         </property>
@@ -67,9 +58,6 @@
       </item>
       <item>
        <widget class="QPushButton" name="pbSupprimer">
-        <property name="toolTip">
-         <string>Supprimer l'élément courant</string>
-        </property>
         <property name="text">
          <string>Supprimer</string>
         </property>
