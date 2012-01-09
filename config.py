@@ -3,7 +3,7 @@
 
 __all__ = ["ConfigUI", "Config"]
 
-from PyQt4.QtCore import SIGNAL, pyqtSignal
+from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QWidget
 
 from configUI import Ui_config
@@ -33,20 +33,16 @@ class ConfigUI(QWidget):
         self.__ui.leServeur.setText(self.__conf["serveur"])
         self.__ui.leServeur.setProperty("name", "serveur")
 
-        self.connect(self.__ui.leEmail, SIGNAL("textChanged(QString)"),
-            self.__valueChanged)
-        self.connect(self.__ui.leSignature, SIGNAL("textChanged(QString)"),
-            self.__valueChanged)
-        self.connect(self.__ui.sbDuree, SIGNAL("valueChanged(QString)"),
-            self.__valueChanged)
-        self.connect(self.__ui.leServeur, SIGNAL("textChanged(QString)"),
-            self.__valueChanged)
+        self.__ui.leEmail.textChanged.connect(self.__valueChanged)
+        self.__ui.leSignature.textChanged.connect(self.__valueChanged)
+        self.__ui.sbDuree.valueChanged.connect(self.__valueChanged)
+        self.__ui.leServeur.textChanged.connect(self.__valueChanged)
 
     def __valueChanged(self, value):
         """Enregistre la valeur modifiée, dans la propriété correspondante"""
         key = str(self.sender().property("name").toString())
         self.__conf[key] = str(value)
-        if key == "duree":
+        if key == "duree" or key == "signature":
             self.majDuree.emit()
 
     def __del__(self):
@@ -89,12 +85,16 @@ class Config():
     def __setitem__(self, key, value):
         self.__config[key] = value
 
+    def __delitem__(self, key):
+        del self.__config[key]
+
     def close(self):
         """Enregistre les options dans le fichier de configuration"""
         f = open(self._path, "w")
         keys = self.__config.keys()
         for k in keys:
-            f.write(k + "=" + self[k] + "\n")
+            if k != "password":
+                f.write(k + "=" + self[k] + "\n")
         f.close()
 
 if __name__ == "__main__":

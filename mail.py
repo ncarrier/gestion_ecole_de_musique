@@ -16,7 +16,7 @@ from socket import gaierror
 from email.MIMEText import MIMEText
 from smtplib import SMTP_SSL, SMTPAuthenticationError
 
-from PyQt4.QtCore import pyqtSignal, SIGNAL, QTimer, QThread, Qt, QDate
+from PyQt4.QtCore import pyqtSignal, QTimer, QThread, Qt, QDate
 from PyQt4.QtGui import QWidget, QMessageBox, QLineEdit, QInputDialog
 from PyQt4.QtSql import QSqlQuery
 
@@ -43,11 +43,10 @@ class MailUI(QWidget):
         self.__ui.setupUi(self)
 
         #Connection des signaux
-        self.connect(self.__ui.cbAbsence, SIGNAL("currentIndexChanged(int)"),
-            self.__majUI)
-        self.connect(self.__ms, SIGNAL("sentSignal(int)"), self.__resulatEnvoi)
-        self.connect(self.__ui.pbEnvoyer, SIGNAL("clicked()"), self.__envoyer)
-        self.connect(self, SIGNAL("majBdd()"), self.miseAJour)
+        self.__ui.cbAbsence.currentIndexChanged.connect(self.__majUI)
+        self.__ms.sentSignal.connect(self.__resulatEnvoi)
+        self.__ui.pbEnvoyer.clicked.connect(self.__envoyer)
+        self.majBdd.connect(self.miseAJour)
 
     def __majUI(self, index):
         u"""Rafraîchit le contenu de l'__ui quand l'absence sélectionée change"""
@@ -56,9 +55,9 @@ class MailUI(QWidget):
 
         self.__ui.leSujet.setText(sujet)
         self.__ui.teCorps.setText(u"""Bonjour,\n"""
-        u"Pourrais-tu me dire rapidement quand tu comptes rattraper tes " +
-        u"cours du " + date + u", car cette absence date déjà de plus de " +
-        u"""deux semaines.
+            u"Pourrais-tu me dire rapidement quand tu comptes rattraper tes " +
+            u"cours du " + date + u", car cette absence date déjà de plus de " +
+            u"""deux semaines.
 Merci,
 """ + self.__conf["signature"])
         self.__ui.pbEnvoyer.setText(u"Envoyer à <" +
@@ -166,13 +165,14 @@ Merci,
             QMessageBox.critical(self, "Erreur d'authentification",
                 "Indentifiants incorrects.<br />(login " + self.__conf["email"]
                 + ")")
+            del(self.__conf["password"])
         else:  # MailSender.MAIL_ERROR_OTHER:
             QMessageBox.critical(self, "Erreur inconnue",
                 "Une erreur inconnue s'est produite.<br />(login '"
                 + self.__conf["email"] + "')")
             # TODO logger l'erreur réelle à la levée de l'exception
 
-        self.refresh()
+        self.majBdd.emit()
 
     def __activerUi(self, actif):
         """Active/désactive les contrôles de l'onglet d'écriture d'emails"""
@@ -187,14 +187,20 @@ Merci,
         dest = str(self.__absences[index]["adresse"])
         sujet = str(self.__ui.leSujet.text().toUtf8())
         corps = self.__ui.teCorps.toPlainText().__str__()
-        result = QInputDialog.getText(self, "Mot de passe",
-                "Veuillez saisir le mot de passe<br /> " +
-                "de votre compte de messagerie",
-                QLineEdit.Password)
-        password = str(result[0])
-        if result[1]:
-            self.__activerUi(False)
-            self.__ms.envoiMail(dest, sujet, corps, password)
+        if "password" not in self.__conf.keys():
+            result = QInputDialog.getText(self, "Mot de passe",
+                    "Veuillez saisir le mot de passe<br /> " +
+                    "de votre compte de messagerie",
+                    QLineEdit.Password)
+            password = str(result[0])
+            self.__conf["password"] = password
+            if not result[1]:
+                return
+        else:
+            password = self.__conf["password"]
+
+        self.__activerUi(False)
+        self.__ms.envoiMail(dest, sujet, corps, password)
 
 
 class MailSender(QThread):
@@ -235,8 +241,7 @@ class MailSender(QThread):
 
         self.start()
         self.__timer.start(timeout * 1000)
-
-        self.connect(self.__timer, SIGNAL("timeout()"), self.timeout)
+        self.__timer.timeout.connect(self.timeout)
 
     def run(self):
         u"""Surchage de la méthode QThread.run()
