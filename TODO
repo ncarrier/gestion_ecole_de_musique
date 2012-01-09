@@ -1,15 +1,26 @@
-Suppression en cascade des absences quand on supprime un intervenant
-        vraie bonne idée ?
-bug affichage nouvelle absence en cours de saisie
-Assistant de premier lancement si pas de fichier de configuration
+Faire que la gestion du fichier de config soit robuste aux lignes vides après
+strip
+
 Enregistrer la taille de la fenêtre dans le fichier de configuration
-Gestion d'erreurs / Sauvegarde de logs
 
 Au bout d'une autre période, après qu'un mail a déjà été envoyé, reproposer d'en
 envoyer un deuxième, non plutôt mettre un compteur de mails envoyer "i" et
 reproposer à i * le nombre de jours de la durée
 
-faire que la gestion du fichier de config soit robuste aux lignes vides
+Ajouter barre d'état et notifications
+
+Suppression en cascade des absences quand on supprime un intervenant
+        plutôt erreur et forcer l'utilisateur à supprimer les absences
+
+bug affichage nouvelle absence en cours de saisie, a réduit mais pas encore
+parfait :
+        si changement d'onglet alors que personne sélectionnée mais pas validée
+
+Assistant de premier lancement si pas de fichier de configuration
+
+Gestion d'erreurs / Sauvegarde de logs
+
+
 
 stocker la config dans la bdd ?
     Vraie bonne idée ? Comment on lance l'appli la première fois, et qu'on veut
