@@ -1,8 +1,8 @@
-Enregistrer la taille de la fenêtre dans le fichier de configuration
-
 Au bout d'une autre période, après qu'un mail a déjà été envoyé, reproposer d'en
 envoyer un deuxième, non plutôt mettre un compteur de mails envoyer "i" et
 reproposer à i * le nombre de jours de la durée
+
+Enregistrer la taille de la fenêtre dans le fichier de configuration
 
 Ajouter barre d'état et notifications
 

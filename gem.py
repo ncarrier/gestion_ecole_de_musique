@@ -66,5 +66,5 @@ if __name__ == "__main__":
     ui.setGeometry(QRect(100, 20, 700, 400))
     ui.show()
     ret = app.exec_()
-    ui.conf.close()
+    del ui
     sys.exit(ret)
