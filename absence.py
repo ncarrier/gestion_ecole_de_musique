@@ -3,8 +3,8 @@
 
 __all__ = ["AbsenceUI"]
 
-from PyQt4.QtCore import pyqtSignal, Qt
-from PyQt4.QtGui import QWidget, QMessageBox
+from PyQt4.QtCore import pyqtSignal, Qt, QString, SLOT, SIGNAL, pyqtSlot
+from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
 from PyQt4.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
 from tableUI import Ui_table
@@ -51,10 +51,22 @@ class AbsenceUI(QWidget):
         self.__modele.rowsInserted.connect(self.__emitMajBdd)
         self.__modele.rowsRemoved.connect(self.__emitMajBdd)
 
+        self.__ui.tv.customContextMenuRequested.connect(self.__menu)
+
+    def __menu(self, pos):
+        u"""Slot d'paparition du menu contextuel"""
+        menu = QMenu()
+        menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
+           QKeySequence.Delete)
+        menu.addAction(QString("Nouveau"), self, SLOT("__nouveau()"),
+           QKeySequence("n"))
+        menu.exec_(self.__ui.tv.mapToGlobal(pos))
+
     def __emitMajBdd(self):
         u"""Informe les observers que la BDD a été modifiée"""
         self.majBdd.emit()
 
+    @pyqtSlot()
     def __supprimer(self):
         u"""Supprime un intervenant de la liste, après confirmation"""
         index = self.__ui.tv.currentIndex()
@@ -74,6 +86,7 @@ class AbsenceUI(QWidget):
             if supprimer == QMessageBox.Yes:
                 self.__modele.removeRow(row)
 
+    @pyqtSlot()
     def __nouveau(self):
         u"""Crée une nouvelle absence vide"""
         self.__modele.insertRow(0)
@@ -92,7 +105,7 @@ if __name__ == "__main__":
     u"""Main de test"""
     import sys
     from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator, QString
+    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator
 
     app = QApplication(sys.argv)
 

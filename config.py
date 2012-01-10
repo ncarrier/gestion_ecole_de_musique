@@ -46,7 +46,8 @@ class ConfigUI(QWidget):
             self.majDuree.emit()
 
     def __del__(self):
-        self.__conf.close()
+        """Destructeur, écrit le fichier de configuration"""
+        self.__conf.sauve()
 
 
 class Config():
@@ -99,7 +100,7 @@ class Config():
         """Méthode magique sous-jacent à l'opérateur del"""
         del self.__config[key]
 
-    def close(self):
+    def sauve(self):
         """Enregistre les options dans le fichier de configuration"""
         f = open(self._path, "w")
         keys = self.__config.keys()
@@ -107,6 +108,7 @@ class Config():
             if k != "password":
                 f.write(k + "=" + self[k] + "\n")
         f.close()
+        print "Configuration enregistrée dans " + self._path
 
 if __name__ == "__main__":
     """Main de test"""
