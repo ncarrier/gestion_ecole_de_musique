@@ -1,6 +1,3 @@
-Faire que la gestion du fichier de config soit robuste aux lignes vides après
-strip
-
 Enregistrer la taille de la fenêtre dans le fichier de configuration
 
 Au bout d'une autre période, après qu'un mail a déjà été envoyé, reproposer d'en

@@ -62,8 +62,16 @@ class Config():
         f = open(Config._path, "r")
         lines = f.readlines()
         for l in lines:
-            s = l.split("#")[0].split("=")
-            self.__config[s[0].strip()] = s[1].strip()
+            # Jette les commentaires
+            l = l.split("#")[0]
+            # Enlève les espaces aux extrémités
+            l = l.strip('\t\v\r\n ')
+            # Separate key and value
+            s = l.split("=")
+            if len(s) == 2:
+                self.__config[s[0].strip()] = s[1].strip()
+            else:
+                print u"Ligne malformée (" + l + ")"
         f.close()
 
     @staticmethod
@@ -77,15 +85,18 @@ class Config():
         return self.__config.keys()
 
     def __getitem__(self, key):
+        """Méthode magique sous-jacent à l'opérateur [] en lecture"""
         if key in self.keys():
             return self.__config[key]
         else:
             return ""
 
     def __setitem__(self, key, value):
+        """Méthode magique sous-jacent à l'opérateur [] en écriture"""
         self.__config[key] = value
 
     def __delitem__(self, key):
+        """Méthode magique sous-jacent à l'opérateur del"""
         del self.__config[key]
 
     def close(self):
