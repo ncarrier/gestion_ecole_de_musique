@@ -26,6 +26,7 @@ from config import Config
 from mailUI import Ui_mail
 from nombres import nombre
 
+
 class MailSQL():
     """Classe chargée de préparer les requêtes pour l'interface de mails"""
     @staticmethod
@@ -120,14 +121,14 @@ class MailUI(QWidget):
         self.majBdd.connect(self.miseAJour)
 
     def __majUI(self, index):
-        u"""Rafraîchit le contenu de l'__ui quand l'absence sélectionée change"""
+        u"""Rafraîchit le contenu de l'ui quand l'absence sélectionée change"""
         date = self.__absences[index]["date"].toString(Qt.SystemLocaleLongDate)
         sujet = "Absence du " + date
 
         self.__ui.leSujet.setText(sujet)
         self.__ui.teCorps.setText(u"""Bonjour,\n"""
             u"Pourrais-tu me dire rapidement quand tu comptes rattraper tes " +
-            u"cours du " + date + u", car cette absence date déjà de plus de " +
+            "cours du " + date + u", car cette absence date déjà de plus de " +
             nombre[int(self.__conf["duree"])] + u""" jours.
 Merci,
 """ + self.__conf["signature"])
