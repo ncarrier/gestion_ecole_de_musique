@@ -106,6 +106,7 @@ class MailUI(QWidget):
         self.__conf = Config.getInstance()
         self.__ms = MailSender(self)
         self.__createWidgets()
+        self.miseAJour()
 
     def __createWidgets(self):
         u"""Créée les widgets de l'interface graphique"""

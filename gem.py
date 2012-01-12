@@ -20,7 +20,6 @@ class GestionAbsences(QMainWindow):
         super(GestionAbsences, self).__init__(parent)
         self.createWidgets()
         self.conf = Config.getInstance()
-        self.mailTab.miseAJour()
         self.__connectSlots()
 
     def __connectSlots(self):
