@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>config</class>
  <widget class="QWidget" name="config">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>291</width>
-    <height>150</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
