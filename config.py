@@ -108,17 +108,9 @@ class Config():
             if k != "password":
                 f.write(k + "=" + self[k] + "\n")
         f.close()
-        print "Configuration enregistrée dans " + self._path
 
 if __name__ == "__main__":
     """Main de test"""
-    c = Config.getInstance()
-    keys = c.keys()
-    for k in keys:
-        print k + " = " + c[k]
-
-    c["test"] = "tirlibibi"
-
     import sys
     from PyQt4.QtGui import QApplication
     from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator, QString

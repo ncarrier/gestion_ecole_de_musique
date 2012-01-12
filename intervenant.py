@@ -95,6 +95,7 @@ if __name__ == "__main__":
     import sys
     from PyQt4.QtGui import QApplication
     from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator
+    from PyQt4.QtSql import QSqlDatabase
 
     app = QApplication(sys.argv)
 
@@ -103,6 +104,11 @@ if __name__ == "__main__":
     translator.load(QString("qt_") + locale,
         QLibraryInfo.location(QLibraryInfo.TranslationsPath))
     app.installTranslator(translator)
+
+    # Configuration de la base de données
+    db = QSqlDatabase.addDatabase("QSQLITE")
+    db.setDatabaseName('private/gem.db')
+    db.open()
 
     ui = IntervenantUI()
     ui.show()
