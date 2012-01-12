@@ -1,13 +1,20 @@
-Au bout d'une autre période, après qu'un mail a déjà été envoyé, reproposer d'en
-envoyer un deuxième, non plutôt mettre un compteur de mails envoyer "i" et
-reproposer à i * le nombre de jours de la durée
+Rendre chaque onglet autonome en y ajoutant l'ouverture de la db
 
-Enregistrer la taille de la fenêtre dans le fichier de configuration
+Vérifier le classement des items de l'ui table
+
+Transformer la fenêtre principale en QMainWindow (avec barre d'état si possible)
+ -> Nécessaire pour Enregistrer l'état dans QSettings
+
+Enregistrer la configuration (et taille fenêtre) avec le mécanisme de settings
+        de Qt :
+    developer.qt.nokia.com/wiki/Saving_Window_Size_State
+    developer.qt.nokia.com/doc/qt-4.8/qsettings.html#registerFormat
 
 Ajouter barre d'état et notifications
 
 Suppression en cascade des absences quand on supprime un intervenant
-        plutôt erreur et forcer l'utilisateur à supprimer les absences
+        plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
+        moins lui demander de confirmer
 
 bug affichage nouvelle absence en cours de saisie, a réduit mais pas encore
 parfait :
@@ -16,9 +23,3 @@ parfait :
 Assistant de premier lancement si pas de fichier de configuration
 
 Gestion d'erreurs / Sauvegarde de logs
-
-
-
-stocker la config dans la bdd ?
-    Vraie bonne idée ? Comment on lance l'appli la première fois, et qu'on veut
-    créer la base ?

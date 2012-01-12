@@ -13,7 +13,8 @@ BEGIN TRANSACTION;
 		jour DATE NOT NULL,
 		id_intervenant INTEGER NOT NULL,
 		regularisee BOOLEAN NOT NULL,
-		mail_envoye BOOLEAN NOT NULL,
+		dernier_mail DATE,
+		mails_envoyes INTEGER NOT NULL,
 		FOREIGN KEY (id_intervenant) REFERENCES intervenant(id)
 	);
 	CREATE TABLE cours(

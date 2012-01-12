@@ -5,12 +5,14 @@ __all__ = ["MailUI"]
 
 u"""Module d'envoi d'emails
 
-Implémente une __ui pour la saisie d'emails ainsi que les mécanismes pour l'envoi
-effectif
+Implémente une __ui pour la saisie d'emails ainsi que les mécanismes pour
+l'envoi effectif
 
 TODO : supporter d'autres fournisseurs d'adresse mail que gmail
 
 """
+
+print_sql = False
 
 from socket import gaierror
 from email.MIMEText import MIMEText
@@ -22,6 +24,73 @@ from PyQt4.QtSql import QSqlQuery
 
 from config import Config
 from mailUI import Ui_mail
+from nombres import nombre
+
+class MailSQL():
+    """Classe chargée de préparer les requêtes pour l'interface de mails"""
+    @staticmethod
+    def construitRequeteComptage(duree):
+        u"""Construit la requête pour compter le nombre des absences
+
+        duree : chaîne contenant la durée de rappel
+
+        """
+
+        sql = """
+          SELECT COUNT(*)
+          FROM absence
+          WHERE regularisee = 'false'
+          AND ((
+              dernier_mail IS NULL
+              AND jour < date('now', '-""" + duree + """ days')
+            )
+            OR dernier_mail < date('now', '-""" + duree + """ days')
+          )
+        """
+        if print_sql:
+            print sql,
+        return sql
+
+    @staticmethod
+    def construitRequeteListe(duree):
+        u"""Construit la requête pour lister les des absences
+
+        duree : chaîne contenant la durée de rappel
+
+        """
+
+        sql = """
+          SELECT absence.id, jour, nom, email, mails_envoyes
+          FROM absence
+          JOIN intervenant
+          ON absence.id_intervenant = intervenant.id
+          WHERE regularisee = 'false'
+          AND ((
+              dernier_mail IS NULL
+              AND jour < date('now', '-""" + duree + """ days')
+            )
+            OR dernier_mail < date('now', '-""" + duree + """ days')
+          )
+        """
+        if print_sql:
+            print sql,
+        return sql
+
+    @staticmethod
+    def mailEnvoye(id_absence):
+        u"""Construit la requête pour enregistrer l'envoi d'un mail
+
+        duree : chaîne contenant l'id de l'absence à modifier
+
+        """
+
+        sql = """
+          UPDATE absence
+          SET mails_envoyes = mails_envoyes + 1, dernier_mail = date('now')
+          WHERE id=""" + id_absence
+        if print_sql:
+            print sql,
+        return sql
 
 
 class MailUI(QWidget):
@@ -41,8 +110,10 @@ class MailUI(QWidget):
         u"""Créée les widgets de l'interface graphique"""
         self.__ui = Ui_mail()
         self.__ui.setupUi(self)
+        self.__connectSlots()
 
-        #Connection des signaux
+    def __connectSlots(self):
+        u"""Connecte les signaux des contrôles et de mise à jour"""
         self.__ui.cbAbsence.currentIndexChanged.connect(self.__majUI)
         self.__ms.sentSignal.connect(self.__resulatEnvoi)
         self.__ui.pbEnvoyer.clicked.connect(self.__envoyer)
@@ -57,7 +128,7 @@ class MailUI(QWidget):
         self.__ui.teCorps.setText(u"""Bonjour,\n"""
             u"Pourrais-tu me dire rapidement quand tu comptes rattraper tes " +
             u"cours du " + date + u", car cette absence date déjà de plus de " +
-            u"""deux semaines.
+            nombre[int(self.__conf["duree"])] + u""" jours.
 Merci,
 """ + self.__conf["signature"])
         self.__ui.pbEnvoyer.setText(u"Envoyer à <" +
@@ -69,20 +140,15 @@ Merci,
 
         # Vérification des mails à envoyer
         req = QSqlQuery()
-        date = QDate.currentDate()
-        date = date.addDays(-int(self.__conf["duree"]))
-        date = date.toString(Qt.ISODate)
-
-        sql = "SELECT COUNT(*) FROM absence "
-        sql += "WHERE mail_envoye='false' "
-        sql += "AND regularisee='false' "
-        sql += "AND jour <= '" + date + "' "
+        sql = MailSQL.construitRequeteComptage(self.__conf["duree"])
         if req.exec_(sql):
             req.next()
             nbMails = int(req.record().value(0).toString())
         else:
             # TODO log
-            print "SQL error"
+            print req.lastError().text()
+            print req.lastQuery()
+            print "Erreur de requête"
             return
         label = str(nbMails) + " absence"
         if nbMails == 0:
@@ -101,13 +167,7 @@ Merci,
         label += " :"
         self.__ui.lAbsence.setText(label)
 
-        sql = "SELECT absence.id, jour, nom, email "
-        sql += "FROM absence "
-        sql += "JOIN intervenant "
-        sql += "ON absence.id_intervenant=intervenant.id "
-        sql += "WHERE mail_envoye='false' "
-        sql += "AND regularisee='false' "
-        sql += "AND jour <= '" + date + "' "
+        sql = MailSQL.construitRequeteListe(self.__conf["duree"])
         if not req.exec_(sql):
             print req.lastError().text()
             print req.lastQuery()
@@ -139,9 +199,7 @@ Merci,
             # Mail envoyé, mise à jour de la base
             index = self.__ui.cbAbsence.currentIndex()
 
-            sql = "UPDATE absence "
-            sql += "SET mail_envoye='true' "
-            sql += "WHERE id=" + str(self.__absences[index]["id"])
+            sql = MailSQL.mailEnvoye(str(self.__absences[index]["id"]))
             req = QSqlQuery()
             if not req.exec_(sql):
                 QMessageBox.critical(self, u"Erreur de base de données",

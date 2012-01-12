@@ -4,7 +4,7 @@ __all__ = ["AbsenceDelegate"]
 from PyQt4.QtCore import QDate, QString, QSize, Qt
 
 from PyQt4.QtGui import QDateEdit, QCheckBox, QFontMetrics, QApplication
-from PyQt4.QtGui import QPalette, QStyle
+from PyQt4.QtGui import QPalette, QStyle, QSpinBox, QStylePainter
 
 from PyQt4.QtSql import QSqlRelationalDelegate
 
@@ -17,11 +17,12 @@ class AbsenceDelegate(QSqlRelationalDelegate):
 
     """
 
-    def __init__(self, parent, dates, booleens):
+    def __init__(self, parent, dates, booleens, numbers):
         """Construit un SpecializedDelegate"""
         super(AbsenceDelegate, self).__init__(parent)
         self.__dates = dates
         self.__booleens = booleens
+        self.__numbers = numbers
 
     def createEditor(self, parent, option, index):
         if not index.isValid():
@@ -32,6 +33,11 @@ class AbsenceDelegate(QSqlRelationalDelegate):
             return QDateEdit(QDate.currentDate(), parent)
         elif index.column() in self.__booleens:
             return QCheckBox("", parent)
+        elif index.column() in self.__numbers:
+            editor = QSpinBox(parent)
+            editor.setMinimum(0);
+            editor.setMaximum(100);
+            return editor;
 
         return QSqlRelationalDelegate.createEditor(self, parent,
                 option, index)
@@ -48,7 +54,10 @@ class AbsenceDelegate(QSqlRelationalDelegate):
         elif index.column() in self.__booleens:
             value = index.model().data(index, Qt.EditRole).toBool()
             editor.setChecked(value)
-
+        elif index.column() in self.__numbers:
+            value = index.model().data(index, Qt.EditRole).toInt()[0]
+            spinBox = editor
+            spinBox.setValue(value)
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
 
@@ -61,6 +70,11 @@ class AbsenceDelegate(QSqlRelationalDelegate):
             date = editor.date().toString("yyyy-MM-dd")
             model.setData(index, date, Qt.EditRole)
 
+        if index.column() in self.__numbers:
+            spinBox = editor
+            spinBox.interpretText()
+            value = spinBox.value()
+            model.setData(index, value, Qt.EditRole)
         else:
             QSqlRelationalDelegate.setModelData(self, editor, model, index)
 
@@ -104,15 +118,11 @@ class AbsenceDelegate(QSqlRelationalDelegate):
             else:
                 palette = QPalette.WindowText
 
-            QApplication.style().drawItemText(painter, option.rect,
-                    align, option.palette, True, value,
-                    palette)
-#        elif index.isValid() and index.column() == self.__booleens:
+            QApplication.style().drawItemText(painter, option.rect, align,
+                option.palette, True, value, palette)
+#        elif index.column() == self.__booleens:
 #            painter = QStylePainter()
 #            painter.drawControl(QStyle.CE_CheckBox, option)
-#        elif index.isValid() and index.column() == self.__regulariseeColumn:
-#            QApplication.style().drawControl(QStyle.CE_CheckBox,
-#                    option, painter)
         else:
             QSqlRelationalDelegate.paint(self, painter, option, index)
 

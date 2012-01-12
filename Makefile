@@ -23,6 +23,6 @@ clean:
 
 db-clean:
 	@echo "Suppression de la base de données"
-#	@rm -f $(DB_FILE)
+	@rm -f $(DB_FILE)
 
 mrproper:clean db-clean

@@ -35,13 +35,14 @@ class AbsenceUI(QWidget):
         self.__modele.setHeaderData(1, Qt.Horizontal, "Jour")
         self.__modele.setHeaderData(2, Qt.Horizontal, "Intervenant")
         self.__modele.setHeaderData(3, Qt.Horizontal, u"Régularisée")
-        self.__modele.setHeaderData(4, Qt.Horizontal, u"Email envoyé")
+        self.__modele.setHeaderData(4, Qt.Horizontal, u"Dernier mail")
+        self.__modele.setHeaderData(5, Qt.Horizontal, u"Emails envoyés")
         self.__modele.setEditStrategy(QSqlTableModel.OnFieldChange)
         self.__modele.select()
 
         self.__ui.tv.setModel(self.__modele)
         self.__ui.tv.setColumnHidden(0, True)
-        self.__ui.tv.setItemDelegate(AbsenceDelegate(self, [1], [3, 4]))
+        self.__ui.tv.setItemDelegate(AbsenceDelegate(self, [1, 4], [3], [5]))
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 
