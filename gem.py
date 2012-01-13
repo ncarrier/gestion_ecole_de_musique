@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo, QRect
 
+from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo, QSettings
+from PyQt4.QtCore import QCoreApplication
 from PyQt4.QtGui import QApplication, QMainWindow
-
 from PyQt4.QtSql import QSqlDatabase
 
 from gemUI import Ui_gem
@@ -14,13 +14,19 @@ from absence import AbsenceUI
 from intervenant import IntervenantUI
 from config import ConfigUI, Config
 
+version = "0.1.0"
 
 class GestionAbsences(QMainWindow):
     def __init__(self, parent=None):
         super(GestionAbsences, self).__init__(parent)
+        settings = QSettings()
+        self.restoreGeometry(settings.value("mainWindowGeometry").toByteArray())
+
         self.createWidgets()
         self.conf = Config.getInstance()
         self.__connectSlots()
+
+        self.restoreState(settings.value("mainWindowState").toByteArray())
 
     def __connectSlots(self):
         u"""Connecte les signaux de l'ui principale"""
@@ -48,9 +54,17 @@ class GestionAbsences(QMainWindow):
         self.configTab = ConfigUI(self)
         tabWidget.addTab(self.configTab, "Configuration")
 
+    def closeEvent(self, event):
+        settings = QSettings()
+        settings.setValue("mainWindowGeometry", self.saveGeometry())
+        settings.setValue("mainWindowState", self.saveState())
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    QCoreApplication.setOrganizationName("nicolas.carrier")
+    QCoreApplication.setApplicationVersion(version)
+    QCoreApplication.setApplicationName("gem")
 
     locale = QLocale.system().name()
     translator = QTranslator()
@@ -65,7 +79,6 @@ if __name__ == "__main__":
 
     # Création de l'__ui principale et boucle principale
     ui = GestionAbsences()
-    ui.setGeometry(QRect(100, 20, 700, 400))
     ui.show()
     ret = app.exec_()
     del ui

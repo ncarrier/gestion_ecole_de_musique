@@ -1,13 +1,12 @@
 BUG de la modification des dates de l'onglet absences
-
-Ajouter un système de notifications via la barre d'état
+BUG des messages d'erreur : Timer mal désarmé ?
 
 Enregistrer la configuration (et taille fenêtre) avec le mécanisme de settings
         de Qt :
     developer.qt.nokia.com/wiki/Saving_Window_Size_State
     developer.qt.nokia.com/doc/qt-4.8/qsettings.html#registerFormat
 
-Ajouter barre d'état et notifications
+Supprimer un item en appuyant sur suppr et en créer un en appuyant sur N
 
 Suppression en cascade des absences quand on supprime un intervenant
         plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
