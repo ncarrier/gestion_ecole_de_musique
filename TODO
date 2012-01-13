@@ -1,9 +1,6 @@
-Rendre chaque onglet autonome en y ajoutant l'ouverture de la db
+BUG de la modification des dates de l'onglet absences
 
-Vérifier le classement des items de l'ui table
-
-Transformer la fenêtre principale en QMainWindow (avec barre d'état si possible)
- -> Nécessaire pour Enregistrer l'état dans QSettings
+Ajouter un système de notifications via la barre d'état
 
 Enregistrer la configuration (et taille fenêtre) avec le mécanisme de settings
         de Qt :
