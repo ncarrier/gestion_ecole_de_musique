@@ -100,6 +100,10 @@ class MailUI(QWidget):
 # signaux
     u"""Signal envoyé quand la base a été modifiée"""
     majBdd = pyqtSignal()
+    u"""Signal envoyé pour notifier d'un événement"""
+    notification = pyqtSignal(str, int)
+    u"""Durée de vie des messages de notification"""
+    DUREE_MESSAGE = 10000
 
     def __init__(self, parent=None):
         super(MailUI, self).__init__(parent)
@@ -199,8 +203,9 @@ Merci,
         """
         if errCode == MailSender.MAIL_ERROR_NONE:
             # Mail envoyé, mise à jour de la base
-            index = self.__ui.cbAbsence.currentIndex()
+            self.notification.emit(u"Email envoyé", MailUI.DUREE_MESSAGE)
 
+            index = self.__ui.cbAbsence.currentIndex()
             sql = MailSQL.mailEnvoye(str(self.__absences[index]["id"]))
             req = QSqlQuery()
             if not req.exec_(sql):
@@ -217,16 +222,29 @@ Merci,
 
         elif (errCode == MailSender.MAIL_ERROR_TIMEOUT or
             errCode == MailSender.MAIL_ERROR_CONNECTION):
+            message = u"Email non envoyé - "
+            if errCode == MailSender.MAIL_ERROR_TIMEOUT:
+                message += u"Erreur de connexion"
+            else:
+                message += u"Durée dépassée"
+            self.notification.emit(message, MailUI.DUREE_MESSAGE)
+
             QMessageBox.critical(self, "Erreur de connection",
                 u"Impossible de contacter le serveur.<br />" +
                 u"Veuillez vérifier la connexion à internet, <br />" +
                 u"ainsi que l'adresse du serveur de messagerie.")
         elif errCode == MailSender.MAIL_ERROR_AUTHENTICATION:
+            message = u"Email non envoyé - Erreur d'authentification"
+            self.notification.emit(message, MailUI.DUREE_MESSAGE)
+
             QMessageBox.critical(self, "Erreur d'authentification",
                 "Indentifiants incorrects.<br />(login " + self.__conf["email"]
                 + ")")
             del(self.__conf["password"])
         else:  # MailSender.MAIL_ERROR_OTHER:
+            message = u"Email non envoyé - Erreur inconnue"
+            self.notification.emit(message, MailUI.DUREE_MESSAGE)
+
             QMessageBox.critical(self, "Erreur inconnue",
                 "Une erreur inconnue s'est produite.<br />(login '"
                 + self.__conf["email"] + "')")
@@ -250,8 +268,7 @@ Merci,
         if "password" not in self.__conf.keys():
             result = QInputDialog.getText(self, "Mot de passe",
                     "Veuillez saisir le mot de passe<br /> " +
-                    "de votre compte de messagerie",
-                    QLineEdit.Password)
+                    "de votre compte de messagerie", QLineEdit.Password)
             password = str(result[0])
             self.__conf["password"] = password
             if not result[1]:
@@ -260,6 +277,7 @@ Merci,
             password = self.__conf["password"]
 
         self.__activerUi(False)
+        self.notification.emit("Email en cours d'envoi", MailUI.DUREE_MESSAGE)
         self.__ms.envoiMail(dest, sujet, corps, password)
 
 

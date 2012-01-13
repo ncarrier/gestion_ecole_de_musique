@@ -23,12 +23,14 @@ class GestionAbsences(QMainWindow):
         self.__connectSlots()
 
     def __connectSlots(self):
-        u"""Connecte les signaux de rafraîchissement du contenu des onglets"""
+        u"""Connecte les signaux de l'ui principale"""
         self.mailTab.majBdd.connect(self.absenceTab.miseAJour)
         self.absenceTab.majBdd.connect(self.mailTab.miseAJour)
         self.intervenantTab.majBdd.connect(self.mailTab.miseAJour)
         self.intervenantTab.majBdd.connect(self.absenceTab.miseAJour)
         self.configTab.majDuree.connect(self.mailTab.miseAJour)
+
+        self.mailTab.notification.connect(self.__ui.statusbar.showMessage)
 
     def createWidgets(self):
         self.__ui = Ui_gem()
