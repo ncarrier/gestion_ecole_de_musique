@@ -40,7 +40,7 @@ class MailSQL():
         sql = """
           SELECT COUNT(*)
           FROM absence
-          WHERE regularisee = 'false'
+          WHERE regularisee = 'non'
           AND ((
               dernier_mail IS NULL
               AND jour < date('now', '-""" + duree + """ days')
@@ -65,7 +65,7 @@ class MailSQL():
           FROM absence
           JOIN intervenant
           ON absence.id_intervenant = intervenant.id
-          WHERE regularisee = 'false'
+          WHERE regularisee = 'non'
           AND ((
               dernier_mail IS NULL
               AND jour < date('now', '-""" + duree + """ days')

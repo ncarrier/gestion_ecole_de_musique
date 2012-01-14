@@ -40,7 +40,6 @@ class GestionAbsences(QMainWindow):
 gem, veuillez vérifier que la configuration est correcte""")
             self.__ui.tabWidget.setCurrentIndex(3)
 
-
     def __connectSlots(self):
         u"""Connecte les signaux de l'ui principale"""
         self.mailTab.majBdd.connect(self.absenceTab.miseAJour)

@@ -92,9 +92,9 @@ class AbsenceUI(QWidget):
         u"""Crée une nouvelle absence vide"""
         self.__modele.insertRow(0)
         index = self.__modele.index(0, 3)
-        self.__modele.setData(index, "false")
-        index = self.__modele.index(0, 4)
-        self.__modele.setData(index, "false")
+        self.__modele.setData(index, "non")
+        index = self.__modele.index(0, 5)
+        self.__modele.setData(index, "0")
 
 # slots
     def miseAJour(self):

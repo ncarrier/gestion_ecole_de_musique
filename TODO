@@ -1,11 +1,6 @@
 BUG de la modification des dates de l'onglet absences
 BUG des messages d'erreur : Timer mal désarmé ?
 
-Enregistrer la configuration (et taille fenêtre) avec le mécanisme de settings
-        de Qt :
-    developer.qt.nokia.com/wiki/Saving_Window_Size_State
-    developer.qt.nokia.com/doc/qt-4.8/qsettings.html#registerFormat
-
 Supprimer un item en appuyant sur suppr et en créer un en appuyant sur N
 
 Suppression en cascade des absences quand on supprime un intervenant
@@ -15,7 +10,5 @@ Suppression en cascade des absences quand on supprime un intervenant
 bug affichage nouvelle absence en cours de saisie, a réduit mais pas encore
 parfait :
         si changement d'onglet alors que personne sélectionnée mais pas validée
-
-Assistant de premier lancement si pas de fichier de configuration
 
 Gestion d'erreurs / Sauvegarde de logs

@@ -4,7 +4,7 @@ __all__ = ["AbsenceDelegate"]
 from PyQt4.QtCore import QDate, QString, QSize, Qt
 
 from PyQt4.QtGui import QDateEdit, QCheckBox, QFontMetrics, QApplication
-from PyQt4.QtGui import QPalette, QStyle, QSpinBox, QStylePainter
+from PyQt4.QtGui import QPalette, QStyle, QSpinBox
 
 from PyQt4.QtSql import QSqlRelationalDelegate
 
@@ -32,12 +32,14 @@ class AbsenceDelegate(QSqlRelationalDelegate):
         if index.column() in self.__dates:
             return QDateEdit(QDate.currentDate(), parent)
         elif index.column() in self.__booleens:
-            return QCheckBox("", parent)
+            editor = QCheckBox("", parent)
+            editor.setAutoFillBackground(True)
+            return editor
         elif index.column() in self.__numbers:
             editor = QSpinBox(parent)
-            editor.setMinimum(0);
-            editor.setMaximum(100);
-            return editor;
+            editor.setMinimum(0)
+            editor.setMaximum(100)
+            return editor
 
         return QSqlRelationalDelegate.createEditor(self, parent,
                 option, index)
@@ -70,11 +72,17 @@ class AbsenceDelegate(QSqlRelationalDelegate):
             date = editor.date().toString("yyyy-MM-dd")
             model.setData(index, date, Qt.EditRole)
 
-        if index.column() in self.__numbers:
+        elif index.column() in self.__numbers:
             spinBox = editor
             spinBox.interpretText()
             value = spinBox.value()
             model.setData(index, value, Qt.EditRole)
+        elif index.column() in self.__booleens:
+            checkBox = editor
+            if checkBox.isChecked():
+                model.setData(index, "oui", Qt.EditRole)
+            else:
+                model.setData(index, "non", Qt.EditRole)
         else:
             QSqlRelationalDelegate.setModelData(self, editor, model, index)
 
@@ -120,9 +128,6 @@ class AbsenceDelegate(QSqlRelationalDelegate):
 
             QApplication.style().drawItemText(painter, option.rect, align,
                 option.palette, True, value, palette)
-#        elif index.column() == self.__booleens:
-#            painter = QStylePainter()
-#            painter.drawControl(QStyle.CE_CheckBox, option)
         else:
             QSqlRelationalDelegate.paint(self, painter, option, index)
 
