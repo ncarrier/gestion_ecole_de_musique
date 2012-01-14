@@ -3,7 +3,7 @@
 
 __all__ = ["IntervenantUI"]
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt, SLOT, QString, QEvent
+from PyQt4.QtCore import pyqtSignal, Qt, QString, SLOT, pyqtSlot, QEvent
 from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
 from PyQt4.QtSql import QSqlTableModel
 
@@ -20,6 +20,7 @@ class IntervenantUI(QWidget):
     def __init__(self, parent=None):
         super(IntervenantUI, self).__init__(parent)
         self.__createWidgets()
+        self.__ui.tv.installEventFilter(self)
 
     def __createWidgets(self):
         u"""Créée les widgets de l'interface graphique"""
@@ -49,7 +50,7 @@ class IntervenantUI(QWidget):
         self.__ui.tv.customContextMenuRequested.connect(self.__menu)
 
     def __menu(self, pos):
-        u"""Slot d'paparition du menu contextuel"""
+        u"""Slot d'apparition du menu contextuel"""
         menu = QMenu()
         menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
            QKeySequence.Delete)
@@ -62,6 +63,7 @@ class IntervenantUI(QWidget):
         self.majBdd.emit()
 
     def keyPressEvent(self, event):
+        u"""Filtre les appuis de touches pour la création et la suppression"""
         if event.type() == QEvent.KeyPress:
             if event.matches(QKeySequence.New):
                 self.__nouveau()
@@ -85,7 +87,7 @@ class IntervenantUI(QWidget):
                 index.sibling(row, 1).data().toString() + " ? ",
                 QMessageBox.Yes | QMessageBox.No)
             if supprimer == QMessageBox.Yes:
-                self.__modele.removeRows(row, 1)
+                self.__modele.removeRow(row)
 
     @pyqtSlot()
     def __nouveau(self):

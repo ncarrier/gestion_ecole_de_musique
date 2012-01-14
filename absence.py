@@ -8,7 +8,13 @@ from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
 from PyQt4.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
 from tableUI import Ui_table
-from absencedelegate import AbsenceDelegate
+from absencedelegate import SpecializedDelegate
+
+class AbsenceSqlRelationalTableModel(QSqlRelationalTableModel):
+    def data(self, index, role):
+        if (role == Qt.TextAlignmentRole):
+            return Qt.AlignCenter
+        return QSqlRelationalTableModel.data(self, index, role)
 
 
 class AbsenceUI(QWidget):
@@ -22,17 +28,15 @@ class AbsenceUI(QWidget):
         super(AbsenceUI, self).__init__(parent)
         self.__createWidgets()
         self.__ui.tv.installEventFilter(self)
-        self.miseAJour()
 
     def __createWidgets(self):
         u"""Créée les widgets de l'interface graphique"""
         self.__ui = Ui_table()
         self.__ui.setupUi(self)
 
-        self.__modele = QSqlRelationalTableModel(self)
+        self.__modele = AbsenceSqlRelationalTableModel(self)
         self.__modele.setTable("absence")
         self.__modele.setRelation(2, QSqlRelation("intervenant", "id", "nom"))
-
         self.__modele.setHeaderData(1, Qt.Horizontal, "Jour")
         self.__modele.setHeaderData(2, Qt.Horizontal, "Intervenant")
         self.__modele.setHeaderData(3, Qt.Horizontal, u"Régularisée")
@@ -43,10 +47,11 @@ class AbsenceUI(QWidget):
 
         self.__ui.tv.setModel(self.__modele)
         self.__ui.tv.setColumnHidden(0, True)
-        self.__ui.tv.setItemDelegate(AbsenceDelegate(self, [1, 4], [3], [5], [4]))
+        self.__ui.tv.setItemDelegate(SpecializedDelegate(self, [1, 4], [3], [5], [4]))
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 
+        # Connexions
         self.__ui.pbNouveau.clicked.connect(self.__nouveau)
         self.__ui.pbSupprimer.clicked.connect(self.__supprimer)
         self.__modele.dataChanged.connect(self.__emitMajBdd)
@@ -56,7 +61,7 @@ class AbsenceUI(QWidget):
         self.__ui.tv.customContextMenuRequested.connect(self.__menu)
 
     def __menu(self, pos):
-        u"""Slot d'paparition du menu contextuel"""
+        u"""Slot d'apparition du menu contextuel"""
         menu = QMenu()
         menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
            QKeySequence.Delete)
@@ -69,6 +74,7 @@ class AbsenceUI(QWidget):
         self.majBdd.emit()
 
     def keyPressEvent(self, event):
+        u"""Filtre les appuis de touches pour la création et la suppression"""
         if event.type() == QEvent.KeyPress:
             if event.matches(QKeySequence.New):
                 self.__nouveau()
@@ -78,7 +84,7 @@ class AbsenceUI(QWidget):
 # slots
     @pyqtSlot()
     def __supprimer(self):
-        u"""Supprime un intervenant de la liste, après confirmation"""
+        u"""Supprime une absence de la liste, après confirmation"""
         index = self.__ui.tv.currentIndex()
         row = index.row()
         if -1 == index:

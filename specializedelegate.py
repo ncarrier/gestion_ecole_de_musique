@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ["AbsenceDelegate"]
+__all__ = ["SpecializedDelegate"]
 
 from PyQt4.QtCore import QDate, QString, QSize, Qt
 
@@ -9,7 +9,7 @@ from PyQt4.QtGui import QPalette, QStyle, QSpinBox
 from PyQt4.QtSql import QSqlRelationalDelegate
 
 
-class AbsenceDelegate(QSqlRelationalDelegate):
+class SpecializedDelegate(QSqlRelationalDelegate):
     u"""Delegate dont les colonnes peuvent être spécialisées
 
     Des listes sont fournies au constructeur selon le type de leur contenu,
@@ -19,7 +19,7 @@ class AbsenceDelegate(QSqlRelationalDelegate):
 
     def __init__(self, parent, dates, booleens, numbers, read_only):
         """Construit un SpecializedDelegate"""
-        super(AbsenceDelegate, self).__init__(parent)
+        super(SpecializedDelegate, self).__init__(parent)
         self.__dates = dates
         self.__booleens = booleens
         self.__numbers = numbers

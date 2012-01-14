@@ -10,3 +10,5 @@ Gestion d'erreurs / Sauvegarde de logs
 Suppression en cascade des absences quand on supprime un intervenant
         plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
         moins lui demander de confirmer
+
+Refactorer absence et intervenant ?
