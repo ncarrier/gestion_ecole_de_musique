@@ -1,14 +1,12 @@
-BUG de la modification des dates de l'onglet absences
 BUG des messages d'erreur : Timer mal désarmé ?
-
-Supprimer un item en appuyant sur suppr et en créer un en appuyant sur N
-
-Suppression en cascade des absences quand on supprime un intervenant
-        plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
-        moins lui demander de confirmer
-
 bug affichage nouvelle absence en cours de saisie, a réduit mais pas encore
 parfait :
         si changement d'onglet alors que personne sélectionnée mais pas validée
 
+Centrer oui / non et checkbox dans onglet absences
+
 Gestion d'erreurs / Sauvegarde de logs
+
+Suppression en cascade des absences quand on supprime un intervenant
+        plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
+        moins lui demander de confirmer

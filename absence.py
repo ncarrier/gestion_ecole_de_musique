@@ -3,7 +3,7 @@
 
 __all__ = ["AbsenceUI"]
 
-from PyQt4.QtCore import pyqtSignal, Qt, QString, SLOT, SIGNAL, pyqtSlot
+from PyQt4.QtCore import pyqtSignal, Qt, QString, SLOT, pyqtSlot, QEvent
 from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
 from PyQt4.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
@@ -21,6 +21,7 @@ class AbsenceUI(QWidget):
     def __init__(self, parent=None):
         super(AbsenceUI, self).__init__(parent)
         self.__createWidgets()
+        self.__ui.tv.installEventFilter(self)
         self.miseAJour()
 
     def __createWidgets(self):
@@ -60,13 +61,21 @@ class AbsenceUI(QWidget):
         menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
            QKeySequence.Delete)
         menu.addAction(QString("Nouveau"), self, SLOT("__nouveau()"),
-           QKeySequence("n"))
+           QKeySequence.New)
         menu.exec_(self.__ui.tv.mapToGlobal(pos))
 
     def __emitMajBdd(self):
         u"""Informe les observers que la BDD a été modifiée"""
         self.majBdd.emit()
 
+    def keyPressEvent(self, event):
+        if event.type() == QEvent.KeyPress:
+            if event.matches(QKeySequence.New):
+                self.__nouveau()
+            elif event.key() == Qt.Key_Delete:
+                self.__supprimer()
+
+# slots
     @pyqtSlot()
     def __supprimer(self):
         u"""Supprime un intervenant de la liste, après confirmation"""
@@ -96,7 +105,6 @@ class AbsenceUI(QWidget):
         index = self.__modele.index(0, 5)
         self.__modele.setData(index, "0")
 
-# slots
     def miseAJour(self):
         u"""Écrit les données en base et relit les données"""
         self.__modele.submitAll()

@@ -3,7 +3,7 @@
 
 __all__ = ["IntervenantUI"]
 
-from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt, SLOT, QString
+from PyQt4.QtCore import pyqtSlot, pyqtSignal, Qt, SLOT, QString, QEvent
 from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
 from PyQt4.QtSql import QSqlTableModel
 
@@ -54,13 +54,21 @@ class IntervenantUI(QWidget):
         menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
            QKeySequence.Delete)
         menu.addAction(QString("Nouveau"), self, SLOT("__nouveau()"),
-           QKeySequence("n"))
+           QKeySequence.New)
         menu.exec_(self.__ui.tv.mapToGlobal(pos))
 
     def __emitMajBdd(self):
         u"""Informe les observers que la BDD a été modifiée"""
         self.majBdd.emit()
 
+    def keyPressEvent(self, event):
+        if event.type() == QEvent.KeyPress:
+            if event.matches(QKeySequence.New):
+                self.__nouveau()
+            elif event.key() == Qt.Key_Delete:
+                self.__supprimer()
+
+# slots
     @pyqtSlot()
     def __supprimer(self):
         """Supprime un intervenant de la liste, après confirmation"""
@@ -84,7 +92,6 @@ class IntervenantUI(QWidget):
         u"""Crée un nouvel intervenant vide"""
         self.__modele.insertRow(0)
 
-# slots
     def miseAJour(self):
         u"""Écrit les données en base et relit les données"""
         self.__modele.submitAll()
