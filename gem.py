@@ -4,7 +4,7 @@
 import sys
 
 from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo
-from PyQt4.QtGui import QApplication, QMainWindow
+from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
 from PyQt4.QtSql import QSqlDatabase
 
 from gemUI import Ui_gem
@@ -23,6 +23,22 @@ class GestionAbsences(QMainWindow):
         self.restoreGeometry(self.__conf["mainWindowGeometry"])
         self.restoreState(self.__conf["mainWindowState"])
         self.__connectSlots()
+        self.__verifieConfig()
+
+    def __verifieConfig(self):
+        u"""Vérifie que la configuration est valide
+
+        Donne le focus à l'onglet de configuration sinon
+
+        """
+        if (not self.__conf["signature"] or
+            not self.__conf["email"] or
+            not self.__conf["duree"] or
+            not self.__conf["serveur"]):
+            QMessageBox.information(self, u"Première configuration",
+                    u"""Il semble que ce soit la première fois que vous lancez
+gem, veuillez vérifier que la configuration est correcte""")
+            self.__ui.tabWidget.setCurrentIndex(3)
 
 
     def __connectSlots(self):
