@@ -3,10 +3,12 @@
 
 __all__ = ["ConfigUI", "Config"]
 
-from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtCore import pyqtSignal, QCoreApplication, QSettings
 from PyQt4.QtGui import QWidget
 
 from configUI import Ui_config
+
+version = "0.1.0"
 
 
 class ConfigUI(QWidget):
@@ -28,6 +30,9 @@ class ConfigUI(QWidget):
         self.__ui.leEmail.setProperty("name", "email")
         self.__ui.leSignature.setText(self.__conf["signature"])
         self.__ui.leSignature.setProperty("name", "signature")
+
+        if not self.__conf["duree"]:
+            self.__conf["duree"] = "10"
         self.__ui.sbDuree.setValue(int(self.__conf["duree"]))
         self.__ui.sbDuree.setProperty("name", "duree")
         self.__ui.leServeur.setText(self.__conf["serveur"])
@@ -45,10 +50,6 @@ class ConfigUI(QWidget):
         if key == "duree" or key == "signature":
             self.majDuree.emit()
 
-    def __del__(self):
-        """Destructeur, écrit le fichier de configuration"""
-        self.__conf.sauve()
-
 
 class Config():
     """Classe chargée de la lecture/écriture/sauvegarde de la configuration"""
@@ -58,22 +59,11 @@ class Config():
     def __init__(self):
         assert self._instance == None
         Config._instance = self
+        QCoreApplication.setOrganizationName("nicolas.carrier")
+        QCoreApplication.setApplicationVersion(version)
+        QCoreApplication.setApplicationName("gem")
 
-        self.__config = {}
-        f = open(Config._path, "r")
-        lines = f.readlines()
-        for l in lines:
-            # Jette les commentaires
-            l = l.split("#")[0]
-            # Enlève les espaces aux extrémités
-            l = l.strip('\t\v\r\n ')
-            # Separate key and value
-            s = l.split("=")
-            if len(s) == 2:
-                self.__config[s[0].strip()] = s[1].strip()
-            else:
-                print u"Ligne malformée (" + l + ")"
-        f.close()
+        self.__settings = QSettings()
 
     @staticmethod
     def getInstance():
@@ -83,31 +73,23 @@ class Config():
         return Config._instance
 
     def keys(self):
-        return self.__config.keys()
+        qkeys = self.__settings.allKeys()
+        return [key.toLocal8Bit() for key in qkeys]
 
     def __getitem__(self, key):
         """Méthode magique sous-jacent à l'opérateur [] en lecture"""
         if key in self.keys():
-            return self.__config[key]
+            return str(self.__settings.value(key).toByteArray())
         else:
             return ""
 
     def __setitem__(self, key, value):
         """Méthode magique sous-jacent à l'opérateur [] en écriture"""
-        self.__config[key] = value
+        self.__settings.setValue(key, value)
 
     def __delitem__(self, key):
         """Méthode magique sous-jacent à l'opérateur del"""
-        del self.__config[key]
-
-    def sauve(self):
-        """Enregistre les options dans le fichier de configuration"""
-        f = open(self._path, "w")
-        keys = self.__config.keys()
-        for k in keys:
-            if k != "password":
-                f.write(k + "=" + self[k] + "\n")
-        f.close()
+        self.__settings.remove(key)
 
 if __name__ == "__main__":
     """Main de test"""

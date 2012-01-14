@@ -3,8 +3,7 @@
 
 import sys
 
-from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo, QSettings
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo
 from PyQt4.QtGui import QApplication, QMainWindow
 from PyQt4.QtSql import QSqlDatabase
 
@@ -14,19 +13,17 @@ from absence import AbsenceUI
 from intervenant import IntervenantUI
 from config import ConfigUI, Config
 
-version = "0.1.0"
 
 class GestionAbsences(QMainWindow):
     def __init__(self, parent=None):
         super(GestionAbsences, self).__init__(parent)
-        settings = QSettings()
-        self.restoreGeometry(settings.value("mainWindowGeometry").toByteArray())
+        self.__conf = Config.getInstance()
 
         self.createWidgets()
-        self.conf = Config.getInstance()
+        self.restoreGeometry(self.__conf["mainWindowGeometry"])
+        self.restoreState(self.__conf["mainWindowState"])
         self.__connectSlots()
 
-        self.restoreState(settings.value("mainWindowState").toByteArray())
 
     def __connectSlots(self):
         u"""Connecte les signaux de l'ui principale"""
@@ -34,7 +31,7 @@ class GestionAbsences(QMainWindow):
         self.absenceTab.majBdd.connect(self.mailTab.miseAJour)
         self.intervenantTab.majBdd.connect(self.mailTab.miseAJour)
         self.intervenantTab.majBdd.connect(self.absenceTab.miseAJour)
-        self.configTab.majDuree.connect(self.mailTab.miseAJour)
+        self.__configTab.majDuree.connect(self.mailTab.miseAJour)
 
         self.mailTab.notification.connect(self.__ui.statusbar.showMessage)
 
@@ -45,26 +42,23 @@ class GestionAbsences(QMainWindow):
 
     def __ajouteOnglets(self, tabWidget):
         u"""Construit et attache les onglets au tab widget"""
+        # l'onglet config doit être créé avant les autres
+        self.__configTab = ConfigUI(self)
         self.mailTab = MailUI(self)
-        tabWidget.addTab(self.mailTab, "Emails")
         self.absenceTab = AbsenceUI(self)
-        tabWidget.addTab(self.absenceTab, "Absences")
         self.intervenantTab = IntervenantUI(self)
+        tabWidget.addTab(self.mailTab, "Emails")
+        tabWidget.addTab(self.absenceTab, "Absences")
         tabWidget.addTab(self.intervenantTab, "Intervenants")
-        self.configTab = ConfigUI(self)
-        tabWidget.addTab(self.configTab, "Configuration")
+        tabWidget.addTab(self.__configTab, "Configuration")
 
     def closeEvent(self, event):
-        settings = QSettings()
-        settings.setValue("mainWindowGeometry", self.saveGeometry())
-        settings.setValue("mainWindowState", self.saveState())
+        self.__conf["mainWindowGeometry"] = self.saveGeometry()
+        self.__conf["mainWindowState"] = self.saveState()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    QCoreApplication.setOrganizationName("nicolas.carrier")
-    QCoreApplication.setApplicationVersion(version)
-    QCoreApplication.setApplicationName("gem")
 
     locale = QLocale.system().name()
     translator = QTranslator()
@@ -81,5 +75,4 @@ if __name__ == "__main__":
     ui = GestionAbsences()
     ui.show()
     ret = app.exec_()
-    del ui
     sys.exit(ret)
