@@ -42,7 +42,7 @@ class AbsenceUI(QWidget):
 
         self.__ui.tv.setModel(self.__modele)
         self.__ui.tv.setColumnHidden(0, True)
-        self.__ui.tv.setItemDelegate(AbsenceDelegate(self, [1, 4], [3], [5]))
+        self.__ui.tv.setItemDelegate(AbsenceDelegate(self, [1, 4], [3], [5], [4]))
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 

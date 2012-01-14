@@ -17,19 +17,22 @@ class AbsenceDelegate(QSqlRelationalDelegate):
 
     """
 
-    def __init__(self, parent, dates, booleens, numbers):
+    def __init__(self, parent, dates, booleens, numbers, read_only):
         """Construit un SpecializedDelegate"""
         super(AbsenceDelegate, self).__init__(parent)
         self.__dates = dates
         self.__booleens = booleens
         self.__numbers = numbers
+        self.__read_only = read_only
 
     def createEditor(self, parent, option, index):
         if not index.isValid():
             return QSqlRelationalDelegate.createEditor(self, parent,
                     option, index)
 
-        if index.column() in self.__dates:
+        if index.column() in self.__read_only:
+            return None
+        elif index.column() in self.__dates:
             return QDateEdit(QDate.currentDate(), parent)
         elif index.column() in self.__booleens:
             editor = QCheckBox("", parent)
@@ -40,7 +43,6 @@ class AbsenceDelegate(QSqlRelationalDelegate):
             editor.setMinimum(0)
             editor.setMaximum(100)
             return editor
-
         return QSqlRelationalDelegate.createEditor(self, parent,
                 option, index)
 
