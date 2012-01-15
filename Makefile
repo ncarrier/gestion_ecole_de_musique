@@ -8,7 +8,7 @@ ui:$(UI)
 
 %UI.py:interface/%.ui
 	@echo "Création de l'ui" $(subst UI.py,,$@)
-	@pyuic4 $< -o $@
+	@pyside-uic $< -o $@
 db:
 	@echo "Création de la structure de la base de données"
 	@cat gem.sql | sqlite3 $(DB_FILE)

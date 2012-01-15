@@ -3,9 +3,9 @@
 
 __all__ = ["AbsenceUI"]
 
-from PyQt4.QtCore import pyqtSignal, Qt, QString, SLOT, pyqtSlot, QEvent
-from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
-from PyQt4.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide.QtCore import Signal, Qt, SLOT, Slot, QEvent, QDate
+from PySide.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
+from PySide.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
 from tableUI import Ui_table
 from specializeddelegate import SpecializedDelegate
@@ -22,7 +22,7 @@ class AbsenceUI(QWidget):
 
 # signaux
     u"""Signal envoyé quand la base a été modifiée"""
-    majBdd = pyqtSignal()
+    majBdd = Signal()
 
     def __init__(self, parent=None):
         super(AbsenceUI, self).__init__(parent)
@@ -52,14 +52,14 @@ class AbsenceUI(QWidget):
             [3], # Champs booléens
             [5], # Champs nombres
             #[]
-            [4]     # Champs en lecture seule TODO
+            [4]     # Champs en lecture seule
         ))
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 
         # Connexions
-        self.__ui.pbNouveau.clicked.connect(self.__nouveau)
-        self.__ui.pbSupprimer.clicked.connect(self.__supprimer)
+        self.__ui.pbNouveau.clicked.connect(self.nouveau)
+        self.__ui.pbSupprimer.clicked.connect(self.supprimer)
         self.__modele.dataChanged.connect(self.__emitMajBdd)
         self.__modele.rowsInserted.connect(self.__emitMajBdd)
         self.__modele.rowsRemoved.connect(self.__emitMajBdd)
@@ -69,9 +69,9 @@ class AbsenceUI(QWidget):
     def __menu(self, pos):
         u"""Slot d'apparition du menu contextuel"""
         menu = QMenu()
-        menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
+        menu.addAction("Supprimer", self, SLOT("supprimer()"),
            QKeySequence.Delete)
-        menu.addAction(QString("Nouveau"), self, SLOT("__nouveau()"),
+        menu.addAction("Nouveau", self, SLOT("nouveau()"),
            QKeySequence.New)
         menu.exec_(self.__ui.tv.mapToGlobal(pos))
 
@@ -83,13 +83,13 @@ class AbsenceUI(QWidget):
         u"""Filtre les appuis de touches pour la création et la suppression"""
         if event.type() == QEvent.KeyPress:
             if event.matches(QKeySequence.New):
-                self.__nouveau()
+                self.nouveau()
             elif event.key() == Qt.Key_Delete:
-                self.__supprimer()
+                self.supprimer()
 
 # slots
-    @pyqtSlot()
-    def __supprimer(self):
+    @Slot()
+    def supprimer(self):
         u"""Supprime une absence de la liste, après confirmation"""
         index = self.__ui.tv.currentIndex()
         row = index.row()
@@ -99,8 +99,8 @@ class AbsenceUI(QWidget):
                 u"Veuiller cliquer sur une absence avant de cliquer sur " +
                 u"supprimer")
         else:
-            nom = index.sibling(row, 2).data().toString()
-            date = index.sibling(row, 1).data().toDate()
+            nom = index.sibling(row, 2).data()
+            date = QDate.fromString(index.sibling(row, 1).data(), Qt.ISODate)
             supprimer = QMessageBox.question(self, "Confirmer la suppression",
                 u"Supprimer l'absence de " + nom + " du " +
                 date.toString(Qt.SystemLocaleLongDate) + " ?",
@@ -108,8 +108,8 @@ class AbsenceUI(QWidget):
             if supprimer == QMessageBox.Yes:
                 self.__modele.removeRow(row)
 
-    @pyqtSlot()
-    def __nouveau(self):
+    @Slot()
+    def nouveau(self):
         u"""Crée une nouvelle absence vide"""
         self.__modele.insertRow(0)
         index = self.__modele.index(0, 3)
@@ -125,15 +125,15 @@ class AbsenceUI(QWidget):
 if __name__ == "__main__":
     u"""Main de test"""
     import sys
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator
-    from PyQt4.QtSql import QSqlDatabase
+    from PySide.QtGui import QApplication
+    from PySide.QtCore import QLibraryInfo, QLocale, QTranslator
+    from PySide.QtSql import QSqlDatabase
 
     app = QApplication(sys.argv)
 
     locale = QLocale.system().name()
     translator = QTranslator()
-    translator.load(QString("qt_") + locale,
+    translator.load("qt_" + locale,
         QLibraryInfo.location(QLibraryInfo.TranslationsPath))
     app.installTranslator(translator)
 

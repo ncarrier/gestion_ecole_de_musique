@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 __all__ = ["SpecializedDelegate"]
 
-from PyQt4.QtCore import QDate, QString, QSize, Qt
+from PySide.QtCore import QDate, QSize, Qt
 
-from PyQt4.QtGui import QDateEdit, QCheckBox, QFontMetrics, QApplication
-from PyQt4.QtGui import QPalette, QStyle, QSpinBox
+from PySide.QtGui import QDateEdit, QCheckBox, QFontMetrics, QApplication
+from PySide.QtGui import QPalette, QStyle, QSpinBox
 
-from PyQt4.QtSql import QSqlRelationalDelegate
+from PySide.QtSql import QSqlRelationalDelegate
 
 
 class SpecializedDelegate(QSqlRelationalDelegate):
@@ -57,14 +57,19 @@ class SpecializedDelegate(QSqlRelationalDelegate):
             return
 
         if index.column() in self.__dates:
-            value = index.model().data(index, Qt.EditRole).toDate()
+            value = QDate.fromString(index.model().data(index, Qt.DisplayRole),
+                 Qt.ISODate)
             editor.setCalendarPopup(True)
             editor.setDate(value)
         elif index.column() in self.__booleens:
-            value = index.model().data(index, Qt.EditRole).toBool()
+            value = index.model().data(index, Qt.EditRole)
+            if value == "oui":
+                value = True
+            else:
+                value = False
             editor.setChecked(value)
         elif index.column() in self.__numbers:
-            value = index.model().data(index, Qt.EditRole).toInt()[0]
+            value = index.model().data(index, Qt.EditRole)
             spinBox = editor
             spinBox.setValue(value)
         else:
@@ -107,12 +112,12 @@ class SpecializedDelegate(QSqlRelationalDelegate):
     def sizeHint(self, option, index):
         size = QSqlRelationalDelegate.sizeHint(self, option, index)
         if index.isValid() and index.column() in self.__dates:
-            value = index.model().data(index, Qt.DisplayRole).toDate()
+            value = QDate.fromString(index.model().data(index, Qt.DisplayRole),
+                 Qt.ISODate)
             value = value.toString(Qt.SystemLocaleLongDate)
-            s = QString(value)
             fm = QFontMetrics(QApplication.font())
 
-            return QSize(fm.width(s) + 5, size.height())
+            return QSize(fm.width(value) + 5, size.height())
         else:
             return size
 
@@ -122,7 +127,8 @@ class SpecializedDelegate(QSqlRelationalDelegate):
             QSqlRelationalDelegate.paint(self, painter, option, index)
 
         if index.column() in self.__dates:
-            value = index.model().data(index, Qt.DisplayRole).toDate()
+            value = QDate.fromString(index.model().data(index, Qt.DisplayRole),
+                 Qt.ISODate)
             value = value.toString(Qt.SystemLocaleLongDate)
             align = Qt.AlignHCenter | Qt.AlignVCenter
             if option.state and QStyle.State_Active:

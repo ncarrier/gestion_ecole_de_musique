@@ -3,9 +3,9 @@
 
 import sys
 
-from PyQt4.QtCore import QLocale, QTranslator, QString, QLibraryInfo
-from PyQt4.QtGui import QApplication, QMainWindow, QMessageBox
-from PyQt4.QtSql import QSqlDatabase
+from PySide.QtCore import QLocale, QTranslator, QLibraryInfo, qDebug, QFile
+from PySide.QtGui import QApplication, QMainWindow, QMessageBox
+from PySide.QtSql import QSqlDatabase
 
 from gemUI import Ui_gem
 from mail import MailUI
@@ -73,21 +73,27 @@ gem, veuillez vérifier que la configuration est correcte""")
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    ret = 0
+#    log = QFile("log")
+#    debug = qDebug(log)
+    try:
+        app = QApplication(sys.argv)
 
-    locale = QLocale.system().name()
-    translator = QTranslator()
-    translator.load(QString("qt_") + locale,
-        QLibraryInfo.location(QLibraryInfo.TranslationsPath))
-    app.installTranslator(translator)
+        locale = QLocale.system().name()
+        translator = QTranslator()
+        translator.load("qt_" + locale,
+            QLibraryInfo.location(QLibraryInfo.TranslationsPath))
+        app.installTranslator(translator)
 
-    # Configuration de la base de données
-    db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName('private/gem.db')
-    db.open()
+        # Configuration de la base de données
+        db = QSqlDatabase.addDatabase("QSQLITE")
+        db.setDatabaseName('private/gem.db')
+        db.open()
 
-    # Création de l'__ui principale et boucle principale
-    ui = GestionAbsences()
-    ui.show()
-    ret = app.exec_()
+        # Création de l'__ui principale et boucle principale
+        ui = GestionAbsences()
+        ui.show()
+        ret = app.exec_()
+    except Exception, e:
+        qDebug(str(e))
     sys.exit(ret)

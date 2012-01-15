@@ -3,9 +3,9 @@
 
 __all__ = ["IntervenantUI"]
 
-from PyQt4.QtCore import pyqtSignal, Qt, QString, SLOT, pyqtSlot, QEvent
-from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
-from PyQt4.QtSql import QSqlTableModel
+from PySide.QtCore import Signal, Qt, SLOT, Slot, QEvent
+from PySide.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
+from PySide.QtSql import QSqlTableModel
 
 from tableUI import Ui_table
 
@@ -15,7 +15,7 @@ class IntervenantUI(QWidget):
 
 # signaux
     u"""Signal envoyé quand la base a été modifiée"""
-    majBdd = pyqtSignal()
+    majBdd = Signal()
 
     def __init__(self, parent=None):
         super(IntervenantUI, self).__init__(parent)
@@ -41,8 +41,8 @@ class IntervenantUI(QWidget):
         self.__ui.tv.resizeColumnsToContents()
 
         # Connexions
-        self.__ui.pbNouveau.clicked.connect(self.__nouveau)
-        self.__ui.pbSupprimer.clicked.connect(self.__supprimer)
+        self.__ui.pbNouveau.clicked.connect(self.nouveau)
+        self.__ui.pbSupprimer.clicked.connect(self.supprimer)
         self.__modele.dataChanged.connect(self.__emitMajBdd)
         self.__modele.rowsInserted.connect(self.__emitMajBdd)
         self.__modele.rowsRemoved.connect(self.__emitMajBdd)
@@ -52,9 +52,9 @@ class IntervenantUI(QWidget):
     def __menu(self, pos):
         u"""Slot d'apparition du menu contextuel"""
         menu = QMenu()
-        menu.addAction(QString("Supprimer"), self, SLOT("__supprimer()"),
+        menu.addAction("Supprimer", self, SLOT("supprimer()"),
            QKeySequence.Delete)
-        menu.addAction(QString("Nouveau"), self, SLOT("__nouveau()"),
+        menu.addAction("Nouveau", self, SLOT("nouveau()"),
            QKeySequence.New)
         menu.exec_(self.__ui.tv.mapToGlobal(pos))
 
@@ -66,13 +66,13 @@ class IntervenantUI(QWidget):
         u"""Filtre les appuis de touches pour la création et la suppression"""
         if event.type() == QEvent.KeyPress:
             if event.matches(QKeySequence.New):
-                self.__nouveau()
+                self.nouveau()
             elif event.key() == Qt.Key_Delete:
-                self.__supprimer()
+                self.supprimer()
 
 # slots
-    @pyqtSlot()
-    def __supprimer(self):
+    @Slot()
+    def supprimer(self):
         """Supprime un intervenant de la liste, après confirmation"""
         index = self.__ui.tv.currentIndex()
         row = index.row()
@@ -84,13 +84,13 @@ class IntervenantUI(QWidget):
         else:
             supprimer = QMessageBox.question(self, "Confirmer la suppression",
                 u"Êtes-vous sûr de vouloir supprimer l'intervenant " +
-                index.sibling(row, 1).data().toString() + " ? ",
+                index.sibling(row, 1).data() + " ? ",
                 QMessageBox.Yes | QMessageBox.No)
             if supprimer == QMessageBox.Yes:
                 self.__modele.removeRow(row)
 
-    @pyqtSlot()
-    def __nouveau(self):
+    @Slot()
+    def nouveau(self):
         u"""Crée un nouvel intervenant vide"""
         self.__modele.insertRow(0)
 
@@ -102,15 +102,15 @@ class IntervenantUI(QWidget):
 if __name__ == "__main__":
     u"""Main de test"""
     import sys
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator
-    from PyQt4.QtSql import QSqlDatabase
+    from PySide.QtGui import QApplication
+    from PySide.QtCore import QLibraryInfo, QLocale, QTranslator
+    from PySide.QtSql import QSqlDatabase
 
     app = QApplication(sys.argv)
 
     locale = QLocale.system().name()
     translator = QTranslator()
-    translator.load(QString("qt_") + locale,
+    translator.load("qt_" + locale,
         QLibraryInfo.location(QLibraryInfo.TranslationsPath))
     app.installTranslator(translator)
 

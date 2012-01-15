@@ -18,9 +18,9 @@ from socket import gaierror
 from email.MIMEText import MIMEText
 from smtplib import SMTP, SMTPAuthenticationError#, SMTP_SSL
 
-from PyQt4.QtCore import pyqtSignal, QTimer, QThread, Qt, QDate
-from PyQt4.QtGui import QWidget, QMessageBox, QLineEdit, QInputDialog
-from PyQt4.QtSql import QSqlQuery
+from PySide.QtCore import Signal, QTimer, QThread, Qt, QDate
+from PySide.QtGui import QWidget, QMessageBox, QLineEdit, QInputDialog
+from PySide.QtSql import QSqlQuery
 
 from config import Config
 from mailUI import Ui_mail
@@ -99,9 +99,9 @@ class MailUI(QWidget):
 
 # signaux
     u"""Signal envoyé quand la base a été modifiée"""
-    majBdd = pyqtSignal()
+    majBdd = Signal()
     u"""Signal envoyé pour notifier d'un événement"""
-    notification = pyqtSignal(str, int)
+    notification = Signal(str, int)
     u"""Durée de vie des messages de notification"""
     DUREE_MESSAGE = 10000
 
@@ -125,9 +125,10 @@ class MailUI(QWidget):
         self.__ui.pbEnvoyer.clicked.connect(self.__envoyer)
         self.majBdd.connect(self.miseAJour)
 
-    def __majUI(self, index):
-        u"""Rafraîchit le contenu de l'ui quand l'absence sélectionée change"""
-        date = self.__absences[index]["date"].toString(Qt.SystemLocaleLongDate)
+    def __majUI(self, item):
+        u"""Rafraîchit le contenu de l'ui quand l'absence sélectionnée change"""
+        idx = self.__ui.cbAbsence.currentIndex()
+        date = self.__absences[idx]["date"].toString(Qt.SystemLocaleLongDate)
         sujet = "Absence du " + date
 
         self.__ui.leSujet.setText(sujet)
@@ -138,7 +139,7 @@ class MailUI(QWidget):
 Merci,
 """ + self.__conf["signature"])
         self.__ui.pbEnvoyer.setText(u"Envoyer à <" +
-            self.__absences[index]["adresse"] + ">")
+            self.__absences[idx]["adresse"] + ">")
 
     def miseAJour(self):
         u"""Liste les absences pouvant donner lieu à un email de rappel"""
@@ -149,7 +150,7 @@ Merci,
         sql = MailSQL.construitRequeteComptage(self.__conf["duree"])
         if req.exec_(sql):
             req.next()
-            nbMails = int(req.record().value(0).toString())
+            nbMails = req.record().value(0)
         else:
             # TODO log
             print req.lastError().text()
@@ -184,11 +185,10 @@ Merci,
                 absence = {}
                 rec = req.record()
                 absence = {}
-                absence["id"] = int(rec.value(0).toString())
-                absence["date"] = QDate.fromString(rec.value(1).toString(),
-                        Qt.ISODate)
-                absence["nom"] = rec.value(2).toString()
-                absence["adresse"] = rec.value(3).toString()
+                absence["id"] = rec.value(0)
+                absence["date"] = QDate.fromString(rec.value(1), Qt.ISODate)
+                absence["nom"] = rec.value(2)
+                absence["adresse"] = rec.value(3)
                 self.__absences.append(absence)
                 item = absence["nom"] + " le "
                 item += absence["date"].toString(Qt.SystemLocaleLongDate)
@@ -293,7 +293,7 @@ class MailSender(QThread):
 
 # signaux
     u"""Signal envoyé à la fin de l'envoi du mail, avec un code d'erreur"""
-    sentSignal = pyqtSignal(int)
+    sentSignal = Signal(int)
 
     def __init__(self, parent):
         super(MailSender, self).__init__(parent)
@@ -346,6 +346,7 @@ class MailSender(QThread):
             self.sentSignal.emit(MailSender.MAIL_ERROR_OTHER)
         finally:
             self.__timer.stop()
+            self.__timer.wait()
 
 # slots
     def timeout(self):
@@ -357,15 +358,15 @@ class MailSender(QThread):
 if __name__ == "__main__":
     """Main de test"""
     import sys
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator, QString
-    from PyQt4.QtSql import QSqlDatabase
+    from PySide.QtGui import QApplication
+    from PySide.QtCore import QLibraryInfo, QLocale, QTranslator
+    from PySide.QtSql import QSqlDatabase
 
     app = QApplication(sys.argv)
 
     locale = QLocale.system().name()
     translator = QTranslator()
-    translator.load(QString("qt_") + locale,
+    translator.load("qt_" + locale,
         QLibraryInfo.location(QLibraryInfo.TranslationsPath))
     app.installTranslator(translator)
 

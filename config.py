@@ -3,8 +3,8 @@
 
 __all__ = ["ConfigUI", "Config"]
 
-from PyQt4.QtCore import pyqtSignal, QCoreApplication, QSettings
-from PyQt4.QtGui import QWidget
+from PySide.QtCore import Slot, Signal, QCoreApplication, QSettings
+from PySide.QtGui import QWidget
 
 from configUI import Ui_config
 
@@ -15,7 +15,7 @@ duree_defaut = "14"
 class ConfigUI(QWidget):
 # signaux
     u"""Signal envoyé quand la duree a été modifiée"""
-    majDuree = pyqtSignal()
+    majDuree = Signal()
 
     """Classe chargée de l'interface de configuration de l'application"""
     def __init__(self, parent=None):
@@ -39,15 +39,16 @@ class ConfigUI(QWidget):
         self.__ui.leServeur.setText(self.__conf["serveur"])
         self.__ui.leServeur.setProperty("name", "serveur")
 
-        self.__ui.leEmail.textChanged.connect(self.__valueChanged)
-        self.__ui.leSignature.textChanged.connect(self.__valueChanged)
-        self.__ui.sbDuree.valueChanged.connect(self.__valueChanged)
-        self.__ui.leServeur.textChanged.connect(self.__valueChanged)
+        self.__ui.leEmail.textChanged.connect(self.valueChanged)
+        self.__ui.leSignature.textChanged.connect(self.valueChanged)
+        self.__ui.sbDuree.valueChanged.connect(self.valueChanged)
+        self.__ui.leServeur.textChanged.connect(self.valueChanged)
 
-    def __valueChanged(self, value):
+    @Slot()
+    def valueChanged(self, value):
         """Enregistre la valeur modifiée, dans la propriété correspondante"""
-        key = str(self.sender().property("name").toString())
-        self.__conf[key] = str(value)
+        key = self.sender().property("name")
+        self.__conf[key] = value
         if key == "duree" or key == "signature":
             self.majDuree.emit()
 
@@ -74,13 +75,12 @@ class Config():
         return Config._instance
 
     def keys(self):
-        qkeys = self.__settings.allKeys()
-        return [key.toLocal8Bit() for key in qkeys]
+        return self.__settings.allKeys()
 
     def __getitem__(self, key):
         """Méthode magique sous-jacent à l'opérateur [] en lecture"""
         if key in self.keys():
-            return str(self.__settings.value(key).toByteArray())
+            return self.__settings.value(key)
         else:
             return ""
 
@@ -95,14 +95,14 @@ class Config():
 if __name__ == "__main__":
     """Main de test"""
     import sys
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import QLibraryInfo, QLocale, QTranslator, QString
+    from PySide.QtGui import QApplication
+    from PySide.QtCore import QLibraryInfo, QLocale, QTranslator
 
     app = QApplication(sys.argv)
 
     locale = QLocale.system().name()
     translator = QTranslator()
-    translator.load(QString("qt_") + locale,
+    translator.load("qt_" + locale,
         QLibraryInfo.location(QLibraryInfo.TranslationsPath))
     app.installTranslator(translator)
 
