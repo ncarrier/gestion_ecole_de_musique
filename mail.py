@@ -16,7 +16,7 @@ print_sql = False
 
 from socket import gaierror
 from email.MIMEText import MIMEText
-from smtplib import SMTP_SSL, SMTPAuthenticationError
+from smtplib import SMTP, SMTPAuthenticationError#, SMTP_SSL
 
 from PyQt4.QtCore import pyqtSignal, QTimer, QThread, Qt, QDate
 from PyQt4.QtGui import QWidget, QMessageBox, QLineEdit, QInputDialog
@@ -328,7 +328,10 @@ class MailSender(QThread):
 
         """
         try:
-            server = SMTP_SSL(self.__conf["serveur"])
+            # Pour gmail, connexion smtp_ssl avec port par défaut
+            # et pas de starttls
+            server = SMTP(self.__conf["serveur"], 587)
+            server.starttls()
             server.login(self.__email['From'], self.__password)
             server.sendmail(self.__email['From'], self.__email['To'],
                 self.__email.as_string())
@@ -338,9 +341,11 @@ class MailSender(QThread):
             self.sentSignal.emit(MailSender.MAIL_ERROR_AUTHENTICATION)
         except gaierror:
             self.sentSignal.emit(MailSender.MAIL_ERROR_CONNECTION)
-        except:
+        except Exception, e:
+            print e
             self.sentSignal.emit(MailSender.MAIL_ERROR_OTHER)
-        self.__timer.stop()
+        finally:
+            self.__timer.stop()
 
 # slots
     def timeout(self):
