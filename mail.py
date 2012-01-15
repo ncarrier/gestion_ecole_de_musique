@@ -262,9 +262,9 @@ Merci,
     def __envoyer(self):
         """Envoie l'email"""
         index = self.__ui.cbAbsence.currentIndex()
-        dest = str(self.__absences[index]["adresse"])
-        sujet = str(self.__ui.leSujet.text().toUtf8())
-        corps = self.__ui.teCorps.toPlainText().__str__()
+        dest = self.__absences[index]["adresse"]
+        sujet = self.__ui.leSujet.text()
+        corps = self.__ui.teCorps.toPlainText()
         try:
             password = self.__password
         except AttributeError:
@@ -346,7 +346,6 @@ class MailSender(QThread):
             self.sentSignal.emit(MailSender.MAIL_ERROR_OTHER)
         finally:
             self.__timer.stop()
-            self.__timer.wait()
 
 # slots
     def timeout(self):
