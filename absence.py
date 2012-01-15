@@ -51,8 +51,8 @@ class AbsenceUI(QWidget):
             [1, 4], # Champs dates
             [3], # Champs booléens
             [5], # Champs nombres
-            #[]
-            [4]     # Champs en lecture seule
+            []
+            #[4]     # Champs en lecture seule
         ))
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()

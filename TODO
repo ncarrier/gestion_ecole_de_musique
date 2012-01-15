@@ -1,4 +1,4 @@
-Gestion d'erreurs / Sauvegarde de logs
+Étendre le système de logs : ne log que les exceptions non catchées
 
 Prévoir un système de mise à jour ota
 

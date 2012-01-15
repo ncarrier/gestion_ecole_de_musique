@@ -3,7 +3,7 @@
 
 import sys
 
-from PySide.QtCore import QLocale, QTranslator, QLibraryInfo, qDebug, QFile
+from PySide.QtCore import QLocale, QTranslator, QLibraryInfo, QIODevice, QFile
 from PySide.QtGui import QApplication, QMainWindow, QMessageBox
 from PySide.QtSql import QSqlDatabase
 
@@ -74,8 +74,8 @@ gem, veuillez vérifier que la configuration est correcte""")
 
 if __name__ == "__main__":
     ret = 0
-#    log = QFile("log")
-#    debug = qDebug(log)
+    log = QFile("log")
+    log.open(QIODevice.WriteOnly)
     try:
         app = QApplication(sys.argv)
 
@@ -95,5 +95,6 @@ if __name__ == "__main__":
         ui.show()
         ret = app.exec_()
     except Exception, e:
-        qDebug(str(e))
+        log.write(str(e))
+        log.close()
     sys.exit(ret)

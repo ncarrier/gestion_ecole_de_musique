@@ -224,9 +224,9 @@ Merci,
             errCode == MailSender.MAIL_ERROR_CONNECTION):
             message = u"Email non envoyé - "
             if errCode == MailSender.MAIL_ERROR_TIMEOUT:
-                message += u"Erreur de connexion"
-            else:
                 message += u"Durée dépassée"
+            else:
+                message += u"Erreur de connexion"
             self.notification.emit(message, MailUI.DUREE_MESSAGE)
 
             QMessageBox.critical(self, "Erreur de connection",
