@@ -8,7 +8,7 @@ from PyQt4.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
 from PyQt4.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
 from tableUI import Ui_table
-from absencedelegate import SpecializedDelegate
+from specializeddelegate import SpecializedDelegate
 
 class AbsenceSqlRelationalTableModel(QSqlRelationalTableModel):
     def data(self, index, role):
@@ -47,7 +47,13 @@ class AbsenceUI(QWidget):
 
         self.__ui.tv.setModel(self.__modele)
         self.__ui.tv.setColumnHidden(0, True)
-        self.__ui.tv.setItemDelegate(SpecializedDelegate(self, [1, 4], [3], [5], [4]))
+        self.__ui.tv.setItemDelegate(SpecializedDelegate(self,
+            [1, 4], # Champs dates
+            [3], # Champs booléens
+            [5], # Champs nombres
+            #[]
+            [4]     # Champs en lecture seule TODO
+        ))
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 

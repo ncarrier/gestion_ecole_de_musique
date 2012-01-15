@@ -240,7 +240,7 @@ Merci,
             QMessageBox.critical(self, "Erreur d'authentification",
                 "Indentifiants incorrects.<br />(login " + self.__conf["email"]
                 + ")")
-            del(self.__conf["password"])
+            del self.__password
         else:  # MailSender.MAIL_ERROR_OTHER:
             message = u"Email non envoyé - Erreur inconnue"
             self.notification.emit(message, MailUI.DUREE_MESSAGE)
@@ -265,16 +265,16 @@ Merci,
         dest = str(self.__absences[index]["adresse"])
         sujet = str(self.__ui.leSujet.text().toUtf8())
         corps = self.__ui.teCorps.toPlainText().__str__()
-        if "password" not in self.__conf.keys():
+        try:
+            password = self.__password
+        except AttributeError:
             result = QInputDialog.getText(self, "Mot de passe",
                     "Veuillez saisir le mot de passe<br /> " +
                     "de votre compte de messagerie", QLineEdit.Password)
-            password = str(result[0])
-            self.__conf["password"] = password
+            self.__password = str(result[0])
+            password = self.__password
             if not result[1]:
                 return
-        else:
-            password = self.__conf["password"]
 
         self.__activerUi(False)
         self.notification.emit("Email en cours d'envoi", MailUI.DUREE_MESSAGE)

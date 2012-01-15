@@ -9,6 +9,7 @@ from PyQt4.QtGui import QWidget
 from configUI import Ui_config
 
 version = "0.1.0"
+duree_defaut = "14"
 
 
 class ConfigUI(QWidget):
@@ -32,7 +33,7 @@ class ConfigUI(QWidget):
         self.__ui.leSignature.setProperty("name", "signature")
 
         if not self.__conf["duree"]:
-            self.__conf["duree"] = "10"
+            self.__conf["duree"] = duree_defaut
         self.__ui.sbDuree.setValue(int(self.__conf["duree"]))
         self.__ui.sbDuree.setProperty("name", "duree")
         self.__ui.leServeur.setText(self.__conf["serveur"])

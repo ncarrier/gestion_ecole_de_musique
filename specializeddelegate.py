@@ -15,6 +15,11 @@ class SpecializedDelegate(QSqlRelationalDelegate):
     Des listes sont fournies au constructeur selon le type de leur contenu,
     pour que la vue puisse fournir un éditeur adapté
 
+    dates : Liste des champs dates
+    booleens : Liste des champs oui / non
+    numbers : Liste des nombres (entre 0 et 100)
+    read_only : Liste des colonnes non mutables
+
     """
 
     def __init__(self, parent, dates, booleens, numbers, read_only):
