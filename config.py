@@ -25,24 +25,24 @@ class ConfigUI(QWidget):
 
     def __createWidgets(self):
         """Créée les widgets de l'interface graphique"""
-        self.__ui = Ui_config()
-        self.__ui.setupUi(self)
-        self.__ui.leEmail.setText(self.__conf["email"])
-        self.__ui.leEmail.setProperty("name", "email")
-        self.__ui.leSignature.setText(self.__conf["signature"])
-        self.__ui.leSignature.setProperty("name", "signature")
+        self._ui = Ui_config()
+        self._ui.setupUi(self)
+        self._ui.leEmail.setText(self.__conf["email"])
+        self._ui.leEmail.setProperty("name", "email")
+        self._ui.leSignature.setText(self.__conf["signature"])
+        self._ui.leSignature.setProperty("name", "signature")
 
         if not self.__conf["duree"]:
             self.__conf["duree"] = duree_defaut
-        self.__ui.sbDuree.setValue(int(self.__conf["duree"]))
-        self.__ui.sbDuree.setProperty("name", "duree")
-        self.__ui.leServeur.setText(self.__conf["serveur"])
-        self.__ui.leServeur.setProperty("name", "serveur")
+        self._ui.sbDuree.setValue(int(self.__conf["duree"]))
+        self._ui.sbDuree.setProperty("name", "duree")
+        self._ui.leServeur.setText(self.__conf["serveur"])
+        self._ui.leServeur.setProperty("name", "serveur")
 
-        self.__ui.leEmail.textChanged.connect(self.valueChanged)
-        self.__ui.leSignature.textChanged.connect(self.valueChanged)
-        self.__ui.sbDuree.valueChanged.connect(self.valueChanged)
-        self.__ui.leServeur.textChanged.connect(self.valueChanged)
+        self._ui.leEmail.textChanged.connect(self.valueChanged)
+        self._ui.leSignature.textChanged.connect(self.valueChanged)
+        self._ui.sbDuree.valueChanged.connect(self.valueChanged)
+        self._ui.leServeur.textChanged.connect(self.valueChanged)
 
     @Slot()
     def valueChanged(self, value):

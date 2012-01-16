@@ -3,11 +3,10 @@
 
 __all__ = ["AbsenceUI"]
 
-from PySide.QtCore import Signal, Qt, SLOT, Slot, QEvent, QDate
-from PySide.QtGui import QWidget, QMessageBox, QMenu, QKeySequence
+from PySide.QtCore import Qt, QDate
 from PySide.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 
-from tableUI import Ui_table
+from table import TableUI
 from specializeddelegate import SpecializedDelegate
 
 class AbsenceSqlRelationalTableModel(QSqlRelationalTableModel):
@@ -17,118 +16,53 @@ class AbsenceSqlRelationalTableModel(QSqlRelationalTableModel):
         return QSqlRelationalTableModel.data(self, index, role)
 
 
-class AbsenceUI(QWidget):
+class AbsenceUI(TableUI):
     """Classe chargée de l'interface de gestion des absences"""
 
-# signaux
-    u"""Signal envoyé quand la base a été modifiée"""
-    majBdd = Signal()
-    u"""Signal envoyé pour notifier d'un événement"""
-    notification = Signal(str, int)
-    u"""Durée de vie des messages de notification"""
-    DUREE_MESSAGE = 10000
+    def setupModel(self):
+        self._modele = AbsenceSqlRelationalTableModel(self)
+        self._modele.setTable("absence")
+        self._modele.setRelation(2, QSqlRelation("intervenant", "id", "nom"))
+        self._modele.setHeaderData(1, Qt.Horizontal, "Jour")
+        self._modele.setHeaderData(2, Qt.Horizontal, "Intervenant")
+        self._modele.setHeaderData(3, Qt.Horizontal, u"Régularisée")
+        self._modele.setHeaderData(4, Qt.Horizontal, u"Dernier mail")
+        self._modele.setHeaderData(5, Qt.Horizontal, u"Emails envoyés")
+        self._modele.setEditStrategy(QSqlTableModel.OnFieldChange)
+        self._modele.select()
 
-    def __init__(self, parent=None):
-        super(AbsenceUI, self).__init__(parent)
-        self.__createWidgets()
-        self.__ui.tv.installEventFilter(self)
-
-    def __createWidgets(self):
-        u"""Créée les widgets de l'interface graphique"""
-        self.__ui = Ui_table()
-        self.__ui.setupUi(self)
-
-        self.__modele = AbsenceSqlRelationalTableModel(self)
-        self.__modele.setTable("absence")
-        self.__modele.setRelation(2, QSqlRelation("intervenant", "id", "nom"))
-        self.__modele.setHeaderData(1, Qt.Horizontal, "Jour")
-        self.__modele.setHeaderData(2, Qt.Horizontal, "Intervenant")
-        self.__modele.setHeaderData(3, Qt.Horizontal, u"Régularisée")
-        self.__modele.setHeaderData(4, Qt.Horizontal, u"Dernier mail")
-        self.__modele.setHeaderData(5, Qt.Horizontal, u"Emails envoyés")
-        self.__modele.setEditStrategy(QSqlTableModel.OnFieldChange)
-        self.__modele.select()
-
-        self.__ui.tv.setModel(self.__modele)
-        self.__ui.tv.setItemDelegate(SpecializedDelegate(self,
+        self._ui.tv.setModel(self._modele)
+        self._ui.tv.setItemDelegate(SpecializedDelegate(self,
             [1, 4], # Champs dates
             [3], # Champs booléens
             [5], # Champs nombres
 #            []
             [4]     # Champs en lecture seule
         ))
-        self.__ui.tv.setColumnHidden(0, True)
-        self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
-        self.__ui.tv.resizeColumnsToContents()
 
-        # Connexions
-        self.__ui.pbNouveau.clicked.connect(self.nouveau)
-        self.__ui.pbSupprimer.clicked.connect(self.supprimer)
-        self.__modele.dataChanged.connect(self.__emitMajBdd)
-        self.__modele.rowsInserted.connect(self.__emitMajBdd)
-        self.__modele.rowsRemoved.connect(self.__emitMajBdd)
+    def msgValidationNouveau(self):
+        u"""Message d'erreur quand on veut créer deux items de suite"""
+        return u"Valider l'absence avant d'en recréer une"
 
-        self.__ui.tv.customContextMenuRequested.connect(self.__menu)
+    def preparationNouveau(self):
+        u"""Insère des données par défaut dans un item tout juste créé"""
+        index = self._modele.index(0, 3)
+        self._modele.setData(index, "non")
+        index = self._modele.index(0, 5)
+        self._modele.setData(index, "0")
 
-    def __menu(self, pos):
-        u"""Slot d'apparition du menu contextuel"""
-        menu = QMenu()
-        menu.addAction("Supprimer", self, SLOT("supprimer()"),
-           QKeySequence.Delete)
-        menu.addAction("Nouveau", self, SLOT("nouveau()"),
-           QKeySequence.New)
-        menu.exec_(self.__ui.tv.mapToGlobal(pos))
+    def titreErrSuppression(self):
+        return u"Cliquer sur l'absence à supprimer"
 
-    def __emitMajBdd(self):
-        u"""Informe les observers que la BDD a été modifiée"""
-        self.majBdd.emit()
+    def msgErrSuppression(self):
+        return u"""Veuiller cliquer sur une absence avant de cliquer sur \
+supprimer"""
 
-    def keyPressEvent(self, event):
-        u"""Filtre les appuis de touches pour la création et la suppression"""
-        if event.type() == QEvent.KeyPress:
-            if event.matches(QKeySequence.New):
-                self.nouveau()
-            elif event.key() == Qt.Key_Delete:
-                self.supprimer()
-
-# slots
-    @Slot()
-    def supprimer(self):
-        u"""Supprime une absence de la liste, après confirmation"""
-        index = self.__ui.tv.currentIndex()
+    def msgSuppression(self, index):
         row = index.row()
-        if -1 == index:
-            QMessageBox.information(self,
-                u"Cliquer sur l'absence à supprimer",
-                u"Veuiller cliquer sur une absence avant de cliquer sur " +
-                u"supprimer")
-        else:
-            nom = index.sibling(row, 2).data()
-            date = QDate.fromString(index.sibling(row, 1).data(), Qt.ISODate)
-            supprimer = QMessageBox.question(self, "Confirmer la suppression",
-                u"Supprimer l'absence de " + nom + " du " +
-                date.toString(Qt.SystemLocaleLongDate) + " ?",
-                QMessageBox.Yes | QMessageBox.No)
-            if supprimer == QMessageBox.Yes:
-                self.__modele.removeRow(row)
-
-    @Slot()
-    def nouveau(self):
-        u"""Crée une nouvelle absence vide"""
-        if self.__modele.index(0, 0).data() != 0:
-            self.__modele.insertRow(0)
-            index = self.__modele.index(0, 3)
-            self.__modele.setData(index, "non")
-            index = self.__modele.index(0, 5)
-            self.__modele.setData(index, "0")
-        else:
-            self.notification.emit(u"Valider l'item avant d'en recréer un",
-               AbsenceUI.DUREE_MESSAGE)
-
-    def miseAJour(self):
-        u"""Écrit les données en base et relit les données"""
-        self.__modele.submitAll()
-        self.__modele.select()
+        nom = index.sibling(row, 2).data()
+        date = QDate.fromString(index.sibling(row, 1).data(), Qt.ISODate)
+        return u"Supprimer l'absence de " + nom + " du " + date.toString(Qt.SystemLocaleLongDate) + " ?"
 
 if __name__ == "__main__":
     u"""Main de test"""

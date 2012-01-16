@@ -38,7 +38,7 @@ class GestionAbsences(QMainWindow):
             QMessageBox.information(self, u"Première configuration",
                     u"""Il semble que ce soit la première fois que vous lancez
 gem, veuillez vérifier que la configuration est correcte""")
-            self.__ui.tabWidget.setCurrentIndex(3)
+            self._ui.tabWidget.setCurrentIndex(3)
 
     def __connectSlots(self):
         u"""Connecte les signaux de l'ui principale"""
@@ -48,13 +48,15 @@ gem, veuillez vérifier que la configuration est correcte""")
         self.intervenantTab.majBdd.connect(self.absenceTab.miseAJour)
         self.__configTab.majDuree.connect(self.mailTab.miseAJour)
 
-        self.mailTab.notification.connect(self.__ui.statusbar.showMessage)
-        self.absenceTab.notification.connect(self.__ui.statusbar.showMessage)
+        self.mailTab.notification.connect(self._ui.statusbar.showMessage)
+        self.absenceTab.notification.connect(self._ui.statusbar.showMessage)
+        self.intervenantTab.notification.connect(
+            self._ui.statusbar.showMessage)
 
     def createWidgets(self):
-        self.__ui = Ui_gem()
-        self.__ui.setupUi(self)
-        self.__ajouteOnglets(self.__ui.tabWidget)
+        self._ui = Ui_gem()
+        self._ui.setupUi(self)
+        self.__ajouteOnglets(self._ui.tabWidget)
 
     def __ajouteOnglets(self, tabWidget):
         u"""Construit et attache les onglets au tab widget"""
@@ -91,11 +93,11 @@ if __name__ == "__main__":
         db.setDatabaseName('private/gem.db')
         db.open()
 
-        # Création de l'__ui principale et boucle principale
+        # Création de l'_ui principale et boucle principale
         ui = GestionAbsences()
         ui.show()
         ret = app.exec_()
     except Exception, e:
-        log.write(str(e))
+        log.write(str(e.traceback()))
         log.close()
     sys.exit(ret)

@@ -1,6 +1,3 @@
-Refactorer absence et intervenant (nécessaire pour interdiciton double
-        insertion)
-
 Prévoir un système de mise à jour ota
 
 bug affichage nouvelle absence en cours de saisie, a réduit mais pas encore

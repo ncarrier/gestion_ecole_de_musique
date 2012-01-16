@@ -5,7 +5,7 @@ __all__ = ["MailUI"]
 
 u"""Module d'envoi d'emails
 
-Implémente une __ui pour la saisie d'emails ainsi que les mécanismes pour
+Implémente une _ui pour la saisie d'emails ainsi que les mécanismes pour
 l'envoi effectif
 
 TODO : supporter d'autres fournisseurs d'adresse mail que gmail
@@ -16,9 +16,9 @@ print_sql = False
 
 from socket import gaierror
 from email.MIMEText import MIMEText
-from smtplib import SMTP, SMTPAuthenticationError#, SMTP_SSL
+from smtplib import SMTP, SMTPAuthenticationError, SMTPServerDisconnected#, SMTP_SSL
 
-from PySide.QtCore import Signal, QTimer, QThread, Qt, QDate
+from PySide.QtCore import Signal, QThread, Qt, QDate
 from PySide.QtGui import QWidget, QMessageBox, QLineEdit, QInputDialog
 from PySide.QtSql import QSqlQuery
 
@@ -114,36 +114,36 @@ class MailUI(QWidget):
 
     def __createWidgets(self):
         u"""Créée les widgets de l'interface graphique"""
-        self.__ui = Ui_mail()
-        self.__ui.setupUi(self)
+        self._ui = Ui_mail()
+        self._ui.setupUi(self)
         self.__connectSlots()
 
     def __connectSlots(self):
         u"""Connecte les signaux des contrôles et de mise à jour"""
-        self.__ui.cbAbsence.currentIndexChanged.connect(self.__majUI)
+        self._ui.cbAbsence.currentIndexChanged.connect(self.__majUI)
         self.__ms.sentSignal.connect(self.__resulatEnvoi)
-        self.__ui.pbEnvoyer.clicked.connect(self.__envoyer)
+        self._ui.pbEnvoyer.clicked.connect(self.__envoyer)
         self.majBdd.connect(self.miseAJour)
 
     def __majUI(self, item):
         u"""Rafraîchit le contenu de l'ui quand l'absence sélectionnée change"""
-        idx = self.__ui.cbAbsence.currentIndex()
+        idx = self._ui.cbAbsence.currentIndex()
         date = self.__absences[idx]["date"].toString(Qt.SystemLocaleLongDate)
         sujet = "Absence du " + date
 
-        self.__ui.leSujet.setText(sujet)
-        self.__ui.teCorps.setText(u"""Bonjour,\n"""
+        self._ui.leSujet.setText(sujet)
+        self._ui.teCorps.setText(u"""Bonjour,\n"""
             u"Pourrais-tu me dire rapidement quand tu comptes rattraper tes " +
             "cours du " + date + u", car cette absence date déjà de plus de " +
             nombre[int(self.__conf["duree"])] + u""" jours.
 Merci,
 """ + self.__conf["signature"])
-        self.__ui.pbEnvoyer.setText(u"Envoyer à <" +
+        self._ui.pbEnvoyer.setText(u"Envoyer à <" +
             self.__absences[idx]["adresse"] + ">")
 
     def miseAJour(self):
         u"""Liste les absences pouvant donner lieu à un email de rappel"""
-        self.__ui.cbAbsence.clear()
+        self._ui.cbAbsence.clear()
 
         # Vérification des mails à envoyer
         req = QSqlQuery()
@@ -160,11 +160,11 @@ Merci,
         label = str(nbMails) + " absence"
         if nbMails == 0:
             label += " :"
-            self.__ui.lAbsence.setText(label)
-            self.__ui.leSujet.setText("")
-            self.__ui.teCorps.setText("")
+            self._ui.lAbsence.setText(label)
+            self._ui.leSujet.setText("")
+            self._ui.teCorps.setText("")
             self.__activerUi(False)
-            self.__ui.pbEnvoyer.setText("Envoyer")
+            self._ui.pbEnvoyer.setText("Envoyer")
             return
         else:
             self.__activerUi(True)
@@ -172,7 +172,7 @@ Merci,
         if nbMails > 1:
             label += "s"
         label += " :"
-        self.__ui.lAbsence.setText(label)
+        self._ui.lAbsence.setText(label)
 
         sql = MailSQL.construitRequeteListe(self.__conf["duree"])
         if not req.exec_(sql):
@@ -192,7 +192,7 @@ Merci,
                 self.__absences.append(absence)
                 item = absence["nom"] + " le "
                 item += absence["date"].toString(Qt.SystemLocaleLongDate)
-                self.__ui.cbAbsence.addItem(item)
+                self._ui.cbAbsence.addItem(item)
 
     def __resulatEnvoi(self, errCode):
         u"""Slot notifié quand l'envoi du mail est fini
@@ -205,7 +205,7 @@ Merci,
             # Mail envoyé, mise à jour de la base
             self.notification.emit(u"Email envoyé", MailUI.DUREE_MESSAGE)
 
-            index = self.__ui.cbAbsence.currentIndex()
+            index = self._ui.cbAbsence.currentIndex()
             sql = MailSQL.mailEnvoye(str(self.__absences[index]["id"]))
             req = QSqlQuery()
             if not req.exec_(sql):
@@ -254,17 +254,17 @@ Merci,
 
     def __activerUi(self, actif):
         """Active/désactive les contrôles de l'onglet d'écriture d'emails"""
-        self.__ui.cbAbsence.setEnabled(actif)
-        self.__ui.pbEnvoyer.setEnabled(actif)
-        self.__ui.leSujet.setEnabled(actif)
-        self.__ui.teCorps.setEnabled(actif)
+        self._ui.cbAbsence.setEnabled(actif)
+        self._ui.pbEnvoyer.setEnabled(actif)
+        self._ui.leSujet.setEnabled(actif)
+        self._ui.teCorps.setEnabled(actif)
 
     def __envoyer(self):
         """Envoie l'email"""
-        index = self.__ui.cbAbsence.currentIndex()
+        index = self._ui.cbAbsence.currentIndex()
         dest = self.__absences[index]["adresse"]
-        sujet = self.__ui.leSujet.text()
-        corps = self.__ui.teCorps.toPlainText()
+        sujet = self._ui.leSujet.text()
+        corps = self._ui.teCorps.toPlainText()
         try:
             password = self.__password
         except AttributeError:
@@ -280,6 +280,7 @@ Merci,
         self.notification.emit("Email en cours d'envoi", MailUI.DUREE_MESSAGE)
         self.__ms.envoiMail(dest, sujet, corps, password)
 
+DEFAULT_TIMEOUT = 10
 
 class MailSender(QThread):
     u"""Classe responsable de l'envoi d'emails"""
@@ -298,9 +299,9 @@ class MailSender(QThread):
     def __init__(self, parent):
         super(MailSender, self).__init__(parent)
         self.__conf = Config.getInstance()
-        self.__timer = QTimer()
 
-    def envoiMail(self, dest, sujet, corps, password, timeout=10):
+    def envoiMail(self, dest, sujet, corps, password,
+            timeout = DEFAULT_TIMEOUT):
         u"""Envoit un mail
 
         Envoit un mail selon les paramètres du fichier de configuration, en
@@ -310,7 +311,6 @@ class MailSender(QThread):
         dont la durée peut être modifiée.
 
         """
-        self.__timer.setSingleShot(True)
         self.__email = MIMEText(corps, 'plain', 'utf-8')
         self.__email['From'] = self.__conf["email"]
         self.__email['To'] = dest
@@ -318,8 +318,6 @@ class MailSender(QThread):
         self.__password = password
 
         self.start()
-        self.__timer.start(timeout * 1000)
-        self.__timer.timeout.connect(self.timeout)
 
     def run(self):
         u"""Surchage de la méthode QThread.run()
@@ -330,7 +328,8 @@ class MailSender(QThread):
         try:
             # Pour gmail, connexion smtp_ssl avec port par défaut
             # et pas de starttls
-            server = SMTP(self.__conf["serveur"], 587)
+            server = SMTP(self.__conf["serveur"], 587, "localhost",
+                DEFAULT_TIMEOUT)
             server.starttls()
             server.login(self.__email['From'], self.__password)
             server.sendmail(self.__email['From'], self.__email['To'],
@@ -341,17 +340,11 @@ class MailSender(QThread):
             self.sentSignal.emit(MailSender.MAIL_ERROR_AUTHENTICATION)
         except gaierror:
             self.sentSignal.emit(MailSender.MAIL_ERROR_CONNECTION)
+        except SMTPServerDisconnected:
+            self.sentSignal.emit(MailSender.MAIL_ERROR_TIMEOUT)
         except Exception, e:
             print e
             self.sentSignal.emit(MailSender.MAIL_ERROR_OTHER)
-        finally:
-            self.__timer.stop()
-
-# slots
-    def timeout(self):
-        u"""Exécuté à l'expiration du timer d'envoi de mail"""
-        self.sentSignal.emit(MailSender.MAIL_ERROR_TIMEOUT)
-        self.terminate()
 
 
 if __name__ == "__main__":
