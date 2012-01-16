@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 __all__ = ["SpecializedDelegate"]
 
-from PySide.QtCore import QDate, QSize, Qt
+from PySide.QtCore import QDate, QSize, Qt, QRect, QPoint
 
 from PySide.QtGui import QDateEdit, QCheckBox, QFontMetrics, QApplication
-from PySide.QtGui import QPalette, QStyle, QSpinBox
+from PySide.QtGui import QPalette, QStyle, QSpinBox, QStyleOptionButton
 
 from PySide.QtSql import QSqlRelationalDelegate
 
@@ -30,6 +30,15 @@ class SpecializedDelegate(QSqlRelationalDelegate):
         self.__numbers = numbers
         self.__read_only = read_only
 
+    def checkBoxRect(self, opt, editor):
+        cb_option = QStyleOptionButton()
+        style = QApplication.style()
+        cb_rect = style.subElementRect(QStyle.SE_CheckBoxIndicator, cb_option,
+            editor)
+        cb_point = QPoint(opt.rect.x() + (opt.rect.width() - cb_rect.width()) / 2,
+            opt.rect.y() + (opt.rect.height() - cb_rect.height()) / 2)
+        return QRect(cb_point, cb_rect.size())
+
     def createEditor(self, parent, option, index):
         if not index.isValid():
             return QSqlRelationalDelegate.createEditor(self, parent,
@@ -41,6 +50,12 @@ class SpecializedDelegate(QSqlRelationalDelegate):
             return QDateEdit(QDate.currentDate(), parent)
         elif index.column() in self.__booleens:
             editor = QCheckBox("", parent)
+            r = self.checkBoxRect(option, editor)
+            rect = option.rect
+            rect.moveTo(r.x(), r.y())
+            rect.setWidth(r.width())
+            rect.setHeight(r.height())
+            editor.setGeometry(rect)
             editor.setAutoFillBackground(True)
             return editor
         elif index.column() in self.__numbers:
