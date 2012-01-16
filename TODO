@@ -1,4 +1,5 @@
-Étendre le système de logs : ne log que les exceptions non catchées
+Refactorer absence et intervenant (nécessaire pour interdiciton double
+        insertion)
 
 Prévoir un système de mise à jour ota
 
@@ -12,7 +13,7 @@ Suppression en cascade des absences quand on supprime un intervenant
         plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
         moins lui demander de confirmer
 
-Refactorer absence et intervenant ?
-
 Créer un mapping fournisseur adresses mail -> paramètres, automatique
         s'inspirer de ce qui est fait dans un client mail pour le paramétrage
+
+Étendre le système de logs : ne log que les exceptions non catchées

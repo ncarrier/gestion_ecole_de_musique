@@ -23,6 +23,10 @@ class AbsenceUI(QWidget):
 # signaux
     u"""Signal envoyé quand la base a été modifiée"""
     majBdd = Signal()
+    u"""Signal envoyé pour notifier d'un événement"""
+    notification = Signal(str, int)
+    u"""Durée de vie des messages de notification"""
+    DUREE_MESSAGE = 10000
 
     def __init__(self, parent=None):
         super(AbsenceUI, self).__init__(parent)
@@ -46,14 +50,14 @@ class AbsenceUI(QWidget):
         self.__modele.select()
 
         self.__ui.tv.setModel(self.__modele)
-        self.__ui.tv.setColumnHidden(0, True)
         self.__ui.tv.setItemDelegate(SpecializedDelegate(self,
             [1, 4], # Champs dates
             [3], # Champs booléens
             [5], # Champs nombres
-            []
-            #[4]     # Champs en lecture seule
+#            []
+            [4]     # Champs en lecture seule
         ))
+        self.__ui.tv.setColumnHidden(0, True)
         self.__ui.tv.sortByColumn(1, Qt.AscendingOrder)
         self.__ui.tv.resizeColumnsToContents()
 
@@ -111,11 +115,15 @@ class AbsenceUI(QWidget):
     @Slot()
     def nouveau(self):
         u"""Crée une nouvelle absence vide"""
-        self.__modele.insertRow(0)
-        index = self.__modele.index(0, 3)
-        self.__modele.setData(index, "non")
-        index = self.__modele.index(0, 5)
-        self.__modele.setData(index, "0")
+        if self.__modele.index(0, 0).data() != 0:
+            self.__modele.insertRow(0)
+            index = self.__modele.index(0, 3)
+            self.__modele.setData(index, "non")
+            index = self.__modele.index(0, 5)
+            self.__modele.setData(index, "0")
+        else:
+            self.notification.emit(u"Valider l'item avant d'en recréer un",
+               AbsenceUI.DUREE_MESSAGE)
 
     def miseAJour(self):
         u"""Écrit les données en base et relit les données"""

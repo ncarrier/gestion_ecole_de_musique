@@ -49,6 +49,7 @@ gem, veuillez vérifier que la configuration est correcte""")
         self.__configTab.majDuree.connect(self.mailTab.miseAJour)
 
         self.mailTab.notification.connect(self.__ui.statusbar.showMessage)
+        self.absenceTab.notification.connect(self.__ui.statusbar.showMessage)
 
     def createWidgets(self):
         self.__ui = Ui_gem()
