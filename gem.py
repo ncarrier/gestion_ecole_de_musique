@@ -98,7 +98,7 @@ if __name__ == "__main__":
         ui = GestionAbsences()
         ui.show()
         ret = app.exec_()
-    except Exception, e:
+    except Exception:
         traceback.print_exc(file=log)
         log.close()
     sys.exit(ret)
