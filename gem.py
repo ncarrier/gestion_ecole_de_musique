@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import traceback
 
 from PySide.QtCore import QLocale, QTranslator, QLibraryInfo, QIODevice, QFile
 from PySide.QtGui import QApplication, QMainWindow, QMessageBox
@@ -98,6 +99,6 @@ if __name__ == "__main__":
         ui.show()
         ret = app.exec_()
     except Exception, e:
-        log.write(str(e.traceback()))
+        traceback.print_exc(file=log)
         log.close()
     sys.exit(ret)

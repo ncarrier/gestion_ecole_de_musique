@@ -301,7 +301,7 @@ class MailSender(QThread):
         self.__conf = Config.getInstance()
 
     def envoiMail(self, dest, sujet, corps, password,
-            timeout = DEFAULT_TIMEOUT):
+            timeout=DEFAULT_TIMEOUT):
         u"""Envoit un mail
 
         Envoit un mail selon les paramètres du fichier de configuration, en
