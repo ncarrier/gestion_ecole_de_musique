@@ -2,70 +2,211 @@
 <ui version="4.0">
  <class>config</class>
  <widget class="QWidget" name="config">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>392</width>
+    <height>412</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Durée (en jours) :</string>
-     </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QFormLayout" name="formLayout_2">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Signature :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Durée (en jours) :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="leSignature">
+        <property name="toolTip">
+         <string>Texte ajouté à la fin du corps de l'email,
+typiquement, le nom de l'expéditeur</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="sbDuree">
+        <property name="toolTip">
+         <string>Durée, en jours, au-delà de laquelle l'envoi
+d'un email de rappel est proposé</string>
+        </property>
+        <property name="maximum">
+         <number>45</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Serveur d'emails :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="leServeur">
+   <item>
+    <widget class="QCheckBox" name="cbMail">
      <property name="toolTip">
-      <string>Adresse du serveur d'envoi de mail.
+      <string>Cocher pour afficher/masquer les options d'envoi</string>
+     </property>
+     <property name="text">
+      <string>Options de configuration de l'envoi des mails</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="wMail" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QWidget" name="wMailGene" native="true">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="contextMenuPolicy">
+         <enum>Qt::DefaultContextMenu</enum>
+        </property>
+        <layout class="QFormLayout" name="formLayout_3">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Serveur SMTP</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Port</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Sécurité</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cbSecurite">
+           <property name="toolTip">
+            <string>Type de sécurité du serveur</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>Aucun</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>TLS</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>SSL</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="leServeur">
+           <property name="toolTip">
+            <string>Adresse du serveur d'envoi de mail.
 ex : smtp.gmail.com</string>
-     </property>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Adresse email :</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="leEmail">
+           <property name="toolTip">
+            <string>Adresse mail avec laquelle seront envoyés les mails de rappel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QSpinBox" name="sbPort"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="toolTip">
+         <string>Cocher pour activer l'authentification auprès du serveur d'envoi</string>
+        </property>
+        <property name="title">
+         <string>Authentification</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="leLogin">
+           <property name="toolTip">
+            <string>Nom d'utilisateur pour s'authentifier auprès du serveur</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lePassword">
+           <property name="toolTip">
+            <string>Mot de passe pour s'authentifier auprès du serveur</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Nom d'utilisateur</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Mot de passe</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QSpinBox" name="sbDuree">
-     <property name="toolTip">
-      <string>Durée, en jours, au-delà de laquelle l'envoi d'un email de rappel est proposé.</string>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <property name="maximum">
-      <number>45</number>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
      </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Adresse email :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="leEmail">
-     <property name="toolTip">
-      <string>Adresse mail avec laquelle seront envoyés les mails de rappel.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Signature :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="leSignature">
-     <property name="toolTip">
-      <string>Texte ajouté à la fin du corps de l'email.
-Typiquement, le nom de l'expéditeur.</string>
-     </property>
-    </widget>
+    </spacer>
    </item>
   </layout>
  </widget>

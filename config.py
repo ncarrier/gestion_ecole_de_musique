@@ -16,6 +16,10 @@ class ConfigUI(QWidget):
 # signaux
     u"""Signal envoyé quand la duree a été modifiée"""
     majDuree = Signal()
+    CONFIG_TEXT = 0
+    CONFIG_INT = 1
+    CONFIG_BOOL = 2
+    CONFIG_PWD = 3
 
     """Classe chargée de l'interface de configuration de l'application"""
     def __init__(self, parent=None):
@@ -23,26 +27,74 @@ class ConfigUI(QWidget):
         self.__conf = Config.getInstance()
         self.__createWidgets()
 
+    def setMap(self):
+        # mapping nom -> (contrôle, callback de setting)
+        self.__map = {
+            "signature": (# name
+                self._ui.leSignature, # widget
+                ConfigUI.CONFIG_TEXT
+            ),
+            "duree": (
+                self._ui.sbDuree,
+                ConfigUI.CONFIG_INT
+            ),
+            "email": (
+                self._ui.leEmail,
+                ConfigUI.CONFIG_TEXT
+            ),
+            "serveur": (
+                self._ui.leServeur,
+                ConfigUI.CONFIG_TEXT
+            ),
+            "port": (
+                self._ui.sbPort,
+                ConfigUI.CONFIG_INT
+            ),
+            "securite": (
+                self._ui.cbSecurite,
+                ConfigUI.CONFIG_TEXT
+            ),
+            "login": (
+                self._ui.leLogin,
+                ConfigUI.CONFIG_TEXT
+            ),
+            "password": (
+                self._ui.lePassword,
+                ConfigUI.CONFIG_TEXT
+            ),
+        }
+
     def __createWidgets(self):
         """Créée les widgets de l'interface graphique"""
         self._ui = Ui_config()
         self._ui.setupUi(self)
+        self.setMap()
+        self._ui.wMail.setVisible(False)
+
+        for key in self.__map.keys():
+            widget = self.__map[key][0]
+            widget.setProperty("name", key)
+            if self.__map[key][1] == ConfigUI.CONFIG_TEXT:
+                widget.textChanged.connect(self.valueChanged)
+                if not self.__conf[key]:
+                    if not self.__map[key][2]:
+                        self.__conf[key] = ""
+                    else:
+                        self.__conf[key] = self.__map[key][2]
+                widget.setText(self.__conf[key])
+
+            elif self.__map[key][1] == ConfigUI.CONFIG_INT:
+                self.__map[key][0].valueChanged.connect(self.valueChanged)
+
         self._ui.leEmail.setText(self.__conf["email"])
-        self._ui.leEmail.setProperty("name", "email")
         self._ui.leSignature.setText(self.__conf["signature"])
-        self._ui.leSignature.setProperty("name", "signature")
 
         if not self.__conf["duree"]:
             self.__conf["duree"] = duree_defaut
         self._ui.sbDuree.setValue(int(self.__conf["duree"]))
-        self._ui.sbDuree.setProperty("name", "duree")
         self._ui.leServeur.setText(self.__conf["serveur"])
-        self._ui.leServeur.setProperty("name", "serveur")
 
-        self._ui.leEmail.textChanged.connect(self.valueChanged)
-        self._ui.leSignature.textChanged.connect(self.valueChanged)
-        self._ui.sbDuree.valueChanged.connect(self.valueChanged)
-        self._ui.leServeur.textChanged.connect(self.valueChanged)
+        self._ui.cbMail.stateChanged.connect(self._ui.wMail.setVisible)
 
     @Slot()
     def valueChanged(self, value):
