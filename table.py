@@ -102,7 +102,7 @@ class TableUI(QWidget):
         Renvoit False si la suppression est interdite
         
         """
-        pass
+        return True
 # \\ méthodes à redéfinir
 
 # slots

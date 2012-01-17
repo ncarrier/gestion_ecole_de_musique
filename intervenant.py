@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from gtk import FALSE
 
 __all__ = ["IntervenantUI"]
 
@@ -65,6 +64,7 @@ supprimer"""
                 # TODO trouver un moyen de setter l'onglet de l'application
                 # self._ui.tabWidget.setCurrentIndex(1)
                 return False
+        # TODO gérer le else, au moins logger quelque chose
 
         return True
 
