@@ -52,7 +52,7 @@ class ConfigUI(QWidget):
             ),
             "securite": (
                 self._ui.cbSecurite,
-                ConfigUI.CONFIG_TEXT
+                ConfigUI.CONFIG_PWD
             ),
             "login": (
                 self._ui.leLogin,
@@ -77,10 +77,10 @@ class ConfigUI(QWidget):
             if self.__map[key][1] == ConfigUI.CONFIG_TEXT:
                 widget.textChanged.connect(self.valueChanged)
                 if not self.__conf[key]:
-                    if not self.__map[key][2]:
-                        self.__conf[key] = ""
-                    else:
+                    try:
                         self.__conf[key] = self.__map[key][2]
+                    except:
+                        self.__conf[key] = ""
                 widget.setText(self.__conf[key])
 
             elif self.__map[key][1] == ConfigUI.CONFIG_INT:

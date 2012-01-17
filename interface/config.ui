@@ -85,21 +85,21 @@ d'un email de rappel est proposé</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Port</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_7">
            <property name="text">
             <string>Sécurité</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QComboBox" name="cbSecurite">
            <property name="toolTip">
             <string>Type de sécurité du serveur</string>
@@ -121,14 +121,6 @@ d'un email de rappel est proposé</string>
            </item>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="leServeur">
-           <property name="toolTip">
-            <string>Adresse du serveur d'envoi de mail.
-ex : smtp.gmail.com</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
@@ -136,15 +128,23 @@ ex : smtp.gmail.com</string>
            </property>
           </widget>
          </item>
+         <item row="3" column="1">
+          <widget class="QSpinBox" name="sbPort"/>
+         </item>
          <item row="0" column="1">
           <widget class="QLineEdit" name="leEmail">
+           <property name="toolTip">
+            <string>Adresse du serveur d'envoi de mail.
+ex : smtp.gmail.com</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="leServeur">
            <property name="toolTip">
             <string>Adresse mail avec laquelle seront envoyés les mails de rappel</string>
            </property>
           </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QSpinBox" name="sbPort"/>
          </item>
         </layout>
        </widget>
@@ -172,6 +172,9 @@ ex : smtp.gmail.com</string>
           <widget class="QLineEdit" name="lePassword">
            <property name="toolTip">
             <string>Mot de passe pour s'authentifier auprès du serveur</string>
+           </property>
+           <property name="echoMode">
+            <enum>QLineEdit::Password</enum>
            </property>
           </widget>
          </item>
