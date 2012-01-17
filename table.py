@@ -82,18 +82,27 @@ class TableUI(QWidget):
 
     def preparationNouveau(self):
         u"""Insère des données par défaut dans un item tout juste créé"""
-        # TODO voir is ça ne peut pas se faire avec un signal sur le modèle
         pass
 
+    def msgErrSuppression(self):
+        u"Message d'erreur de suppression quand aucun item n'est sélectionné"
+        return u"Veuiller cliquer sur un item avant de cliquer sur supprimer"
+
     def titreErrSuppression(self):
+        u"Titre du message d'erreur quand aucun item n'est sélectionné"
         return u"Cliquer sur l'item à supprimer"
 
-    def msgErrSuppression(self):
-        return u"Veuiller cliquer sur un utem avant de cliquer sur supprimer"
-
     def msgSuppression(self, index):
+        u"Message de confirmation de suppression d'un item"
         return u"Voulez-vous supprimer l'item à la ligne " + str(index.row()) + " ?"
 
+    def preSupprVerification(self, index):
+        u"""Vérification à effectuer avant d'autoriser à supprimer un item
+        
+        Renvoit False si la suppression est interdite
+        
+        """
+        pass
 # \\ méthodes à redéfinir
 
 # slots
@@ -101,6 +110,8 @@ class TableUI(QWidget):
     def supprimer(self):
         u"""Supprime un item de la liste, après confirmation"""
         index = self._ui.tv.currentIndex()
+        if not self.preSupprVerification(index):
+            return
         row = index.row()
         if -1 == row:
             QMessageBox.information(self, self.titreErrSuppression(),

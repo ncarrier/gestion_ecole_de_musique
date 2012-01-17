@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from gtk import FALSE
 
 __all__ = ["IntervenantUI"]
 
 from PySide.QtCore import Qt
-from PySide.QtSql import QSqlTableModel
+from PySide.QtGui import QMessageBox
+from PySide.QtSql import QSqlTableModel, QSqlQuery
 
 from table import TableUI
 
@@ -37,6 +39,34 @@ supprimer"""
 
     def msgSuppression(self, index):
         return u"Êtes-vous sûr de vouloir supprimer l'intervenant " + index.sibling(index.row(), 1).data() + " ? "
+
+    def preSupprVerification(self, index):
+        u"""Vérification à effectuer avant d'autoriser à supprimer un item
+        
+        Renvoit False si la suppression est interdite
+        
+        """
+        sql = """
+          SELECT COUNT(*)
+          FROM absence
+          WHERE id_intervenant=""" + str(index.sibling(index.row(), 0).data())
+        req = QSqlQuery()
+        if req.exec_(sql):
+            req.next()
+            nbAbsences = req.record().value(0)
+            if nbAbsences != 0:
+                pl = ""
+                if nbAbsences != 1:
+                    pl = "s"
+                QMessageBox.critical(self, "Impossible de suppprimer",
+                    "L'intervenant a encore " + str(nbAbsences) +
+                    u" absence" + pl + " enregistrée" + pl + "<br />" +
+                    "Il faut les supprimer avant")
+                # TODO trouver un moyen de setter l'onglet de l'application
+                # self._ui.tabWidget.setCurrentIndex(1)
+                return False
+
+        return True
 
 if __name__ == "__main__":
     u"""Main de test"""

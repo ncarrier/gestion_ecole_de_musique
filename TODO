@@ -1,16 +1,12 @@
+Créer un mapping fournisseur adresses mail -> paramètres, automatique
+        s'inspirer de ce qui est fait dans un client mail pour le paramétrage
+
 Prévoir un système de mise à jour ota
 
 bug affichage nouvelle absence en cours de saisie, a réduit mais pas encore
 parfait :
         si changement d'onglet alors que personne sélectionnée mais pas validée
 
-Centrer checkbox dans onglet absences
-
-Suppression en cascade des absences quand on supprime un intervenant
-        plutôt erreur et forcer l'utilisateur à supprimer les absences ou au
-        moins lui demander de confirmer
-
-Créer un mapping fournisseur adresses mail -> paramètres, automatique
-        s'inspirer de ce qui est fait dans un client mail pour le paramétrage
-
 Étendre le système de logs : ne log que les exceptions non catchées
+Mettre un fond aux checkboxes ?
+Supprimer les absences en cascades si justifiées ? (Choix ?)
