@@ -25,4 +25,24 @@ db-clean:
 	@echo "Suppression de la base de données"
 	@rm -f $(DB_FILE)
 
-mrproper:clean db-clean
+winexe-clean:
+	@rm -Rf dist gem.spec warngem.txt
+
+winexe:all
+	@echo "Création de l'exécutable windows"
+	@~/.wine/drive_c/Python27/python.exe windows/pyinstaller-1.5.1/Makespec.py -F -w gem.py
+	@~/.wine/drive_c/Python27/python.exe windows/pyinstaller-1.5.1/Build.py gem.spec
+	@echo Finalisation
+	@mkdir dist/sqldrivers
+	@mkdir dist/private
+	@cp sqldrivers/qsqlite4.dll dist/sqldrivers/
+	@cp private/gem.db dist/private
+
+winsetup:winexe
+	@echo "Création de l'installeur windows"
+	@wine ~/.wine/drive_c/Program\ Files/Inno\ Setup\ 5/Compil32.exe /cc inno_setup.iss
+
+winsetup-clean:
+
+mrproper:clean db-clean winexe-clean
+	@rm -f log log* rm -Rf dist gem_setup.exe

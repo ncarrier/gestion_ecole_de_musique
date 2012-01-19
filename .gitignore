@@ -12,3 +12,10 @@ gestionAbsencesUI.py
 .project
 .pydevproject
 .settings/
+build
+dist
+gem_setup.exe
+gem.spec
+log*
+gem_setup.exe
+warngem.txt
