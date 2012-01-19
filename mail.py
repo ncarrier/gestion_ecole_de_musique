@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# workaround to make pyinstaller work
+import email.mime.text
 
 __all__ = ["MailUI"]
 
