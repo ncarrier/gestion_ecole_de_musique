@@ -37,6 +37,7 @@ class MailSQL():
 
         """
 
+        duree = str(duree)
         sql = """
           SELECT COUNT(*)
           FROM absence
@@ -60,6 +61,7 @@ class MailSQL():
 
         """
 
+        duree = str(duree)
         sql = """
           SELECT absence.id, jour, nom, email, mails_envoyes
           FROM absence
@@ -85,6 +87,7 @@ class MailSQL():
 
         """
 
+        id_absence = str(id_absence)
         sql = """
           UPDATE absence
           SET mails_envoyes = mails_envoyes + 1, dernier_mail = date('now')
