@@ -58,9 +58,9 @@ supprimer"""
                 if nbAbsences != 1:
                     pl = "s"
                 QMessageBox.critical(self, "Impossible de suppprimer",
-                    "L'intervenant a encore " + str(nbAbsences) +
-                    u" absence" + pl + " enregistrée" + pl + "<br />" +
-                    "Il faut les supprimer avant")
+                    u"L'intervenant a encore " + str(nbAbsences) +
+                    u" absence" + pl + u" enregistrée" + pl + "<br />" +
+                    u"Il faut les supprimer avant")
                 # TODO trouver un moyen de setter l'onglet de l'application
                 # self._ui.tabWidget.setCurrentIndex(1)
                 return False
